@@ -2,6 +2,16 @@ import { db } from '../database/FirebaseConfig.js';
 import { addDoc, collection, deleteDoc, doc, getDoc, getDocs, orderBy, query, updateDoc, where } from 'firebase/firestore';
 import { Flashcard } from '../models/IFlashcard.js';
 
+async function checkUserPermission(userId: string, setId: string): Promise<void> {
+  const setsCollection = collection(db, 'sets');
+  const setRef = doc(setsCollection, setId);
+  const setSnapshot = await getDoc(setRef);
+
+  if (!setSnapshot.exists() || setSnapshot.data()?.creatorUserId !== userId) {
+    throw new Error('Unauthorized');
+  }
+}
+
 async function getFlashcards(flashcardRef: string): Promise<{ flashcards: Flashcard[] }> {
   try {
     const flashcardsCollection = collection(db, 'flashcards');
@@ -29,15 +39,29 @@ async function getFlashcards(flashcardRef: string): Promise<{ flashcards: Flashc
   }
 }
 
-async function addFlashcard(productRef: string, newFlashcard: Omit<Flashcard, 'id' | 'setId'>): Promise<void> {
+async function addFlashcard(flashcardRef: string, userId: string, newFlashcard: Omit<Flashcard, 'id' | 'setId'>): Promise<void> {
   try {
     if (!newFlashcard.term || !newFlashcard.definition) {
-      throw new Error('Term and definition are a required fields');
+      throw new Error('Term and definition are required fields');
     }
+
+    const setsCollection = collection(db, 'sets');
+    const setRef = doc(setsCollection, flashcardRef);
+    const setSnapshot = await getDoc(setRef);
+
+    if (!setSnapshot.exists()) {
+      throw new Error('Set not found');
+    }
+
+    const setData = setSnapshot.data();
+    if (setData?.creatorUserId !== userId) {
+      throw new Error('Unauthorized');
+    }
+    
 
     const flashcardToAdd: Flashcard = {
       ...newFlashcard,
-      setId: productRef
+      setId: flashcardRef
     };
 
     const flashcardsCollection = collection(db, 'flashcards');
@@ -63,18 +87,22 @@ async function deleteFlashcard(flashcardId: string) {
     }
 }
 
-async function editFlashcard(flashcardId: string, updatedFields: Pick<Flashcard, 'term' | 'definition'>) {
+async function editFlashcard(flashcardId: string, userId: string, updatedFields: Pick<Flashcard, 'term' | 'definition'>) {
   try {
     const flashcardsCollection = collection(db, 'flashcards');
     const flashcardRef = doc(flashcardsCollection, flashcardId);
-
     const flashcardSnapshot = await getDoc(flashcardRef);
 
-    if (flashcardSnapshot.exists()) {
-        await updateDoc(flashcardRef, updatedFields);
-    } else {
-        throw new Error('Flashcard not found');
+    if (!flashcardSnapshot.exists()) {
+      throw new Error('Flashcard not found');
     }
+
+    const flashcardData = flashcardSnapshot.data();
+    const setId = flashcardData?.setId;
+
+    await checkUserPermission(userId, setId);
+
+    await updateDoc(flashcardRef, updatedFields);
   } catch (error) {
     console.error('Error editing flashcard in the database:', error);
     throw error;
