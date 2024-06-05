@@ -44,10 +44,25 @@ flashcardRouter.post('/add/:setId', async (req: Request, res: Response) => {
 flashcardRouter.delete('/delete/:flashcardId', async (req, res) => {
   try {
     const flashcardId = req.params.flashcardId;
-    await deleteFlashcard(flashcardId);
-    res.status(200).send('Flashcard deleted successfully');
+
+    const accessToken = req.header('Authorization')?.split(' ')[1];
+    if (!accessToken) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+    const decodedToken: DecodedToken | null = await verifyToken(accessToken);
+    if (!decodedToken) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+    const userUid: string | undefined = decodedToken.userId;
+
+    if (!userUid) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    await deleteFlashcard(flashcardId, userUid);
+    res.status(204).send();
   } catch (error) {
-    console.error('Error handling DELETE request:', error);
+    console.error('Error editing product:', error);
     res.status(500).send('Internal Server Error');
   }
 });

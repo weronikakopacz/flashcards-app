@@ -74,17 +74,26 @@ async function addFlashcard(flashcardRef: string, userId: string, newFlashcard: 
   }
 }
 
-async function deleteFlashcard(flashcardId: string) {
-    try {
-      const flashcardsCollection = collection(db, 'flashcards');
-      const flashcardRef = doc(flashcardsCollection, flashcardId);
-  
-      await deleteDoc(flashcardRef);
-      console.log('Flashcard successfully deleted from the database');
-    } catch (error) {
-      console.error('Error deleting flashcard from the database:', error);
-      throw error;
+async function deleteFlashcard(flashcardId: string, userId: string) {
+  try {
+    const flashcardsCollection = collection(db, 'flashcards');
+    const flashcardRef = doc(flashcardsCollection, flashcardId);
+
+    const flashcardSnapshot = await getDoc(flashcardRef);
+
+    if (flashcardSnapshot.exists()) {
+      if (flashcardSnapshot.data().creatorUserId === userId) {
+        await deleteDoc(flashcardRef);
+      } else {
+        throw new Error('User is not the creator of the flashcard');
+      }
+    } else {
+      throw new Error('Flashcard not found');
     }
+  } catch (error) {
+    console.error('Error deleting flashcard in the database:', error);
+    throw error;
+  }
 }
 
 async function editFlashcard(flashcardId: string, userId: string, updatedFields: Pick<Flashcard, 'term' | 'definition'>) {

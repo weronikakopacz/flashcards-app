@@ -89,7 +89,7 @@ async function deleteSet(userId: string, setId: string) {
     const querySnapshot = await getDocs(flashcardsQuery);
 
     const deleteFlashcardsPromises = querySnapshot.docs.map(async (flashcardDoc) => {
-      await deleteFlashcard(flashcardDoc.id);
+      await deleteFlashcard(flashcardDoc.id, userId);
     });
     await Promise.all(deleteFlashcardsPromises);
 
