@@ -4,8 +4,9 @@ import 'package:logger/logger.dart';
 
 class AuthService {
   final Logger _logger = Logger();
+  String? _accessToken;
 
-  Future<void> registerUser(String email, String password) async {
+  Future<String?> registerUser(String email, String password) async {
     try {
       final response = await http.post(
         Uri.parse('http://localhost:8080/api/user/register'),
@@ -14,18 +15,19 @@ class AuthService {
       );
 
       if (response.statusCode == 201) {
-        _logger.i('User registered successfully');
+        return null;
       } else {
         _logger.e('Error during registration: ${response.body}');
-        throw Exception('Registration failed');
+        final errorResponse = jsonDecode(response.body);
+        return errorResponse['error'] ?? 'Registration failed';
       }
     } catch (error) {
       _logger.e('Error during registration: $error');
-      throw Exception('Registration failed');
+      return 'Registration failed: $error';
     }
   }
 
-  Future<void> loginUser(String email, String password) async {
+  Future<String?> loginUser(String email, String password) async {
     try {
       final response = await http.post(
         Uri.parse('http://localhost:8080/api/user/login'),
@@ -34,14 +36,19 @@ class AuthService {
       );
 
       if (response.statusCode == 200) {
-        _logger.i('Login successful');
+        final responseBody = jsonDecode(response.body);
+        _accessToken = responseBody['accessToken'];
+        return null;
       } else {
-        _logger.e('Error during login: ${response.body}');
-        throw Exception('Login failed');
+        final responseBody = jsonDecode(response.body);
+        return responseBody['error'] ?? 'Login failed';
       }
     } catch (error) {
-      _logger.e('Error during login: $error');
-      throw Exception('Login failed');
+      return 'Login failed: $error';
     }
+  }
+
+  String? getAccessToken() {
+    return _accessToken;
   }
 }

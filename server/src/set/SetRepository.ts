@@ -64,18 +64,14 @@ async function addSet(userId: string, newSet: Omit<Set, 'id'>) {
     }
 
     const setToAdd: Set = {
-      ...newSet
+      ...newSet,
+      creatorUserId: userId
     };
 
     const setsCollection = collection(db, 'sets');
     const docRef = await addDoc(setsCollection, setToAdd);
-    const setSnapshot = await getDoc(docRef);
-    
-    if (setSnapshot.data()?.creatorUserId === userId) {
-      setToAdd.id = docRef.id;
-    } else {
-      throw new Error('User is not the creator of the product');
-    }
+
+    setToAdd.id = docRef.id;
   } catch (error) {
     console.error('Error adding set to the database:', error);
     throw error;
