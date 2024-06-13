@@ -89,7 +89,7 @@ class _LoginScreenFormState extends State<_LoginScreenForm> {
               onPressed: () {
                 Navigator.pushNamed(context, '/registration');
               },
-              child: const Text('Nie masz konta? Zarejestruj się'),
+              child: const Text('You do not have an account? Register'),
             ),
           ],
         ),

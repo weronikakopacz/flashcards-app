@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/components/header_widget.dart';
 import 'package:frontend/models/set.dart';
 import 'package:frontend/services/set_service.dart';
 
@@ -35,31 +36,29 @@ class HomeScreenState extends State<HomeScreen> {
   }
 }
 
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Home'),
-      ),
+      appBar: const PreferredSize(preferredSize: Size.fromHeight(kToolbarHeight), child: HeaderWidget()),
       body: errorMessage != null
-        ? Center(
-            child: Text(
-              errorMessage!,
-              style: const TextStyle(color: Colors.red),
+          ? Center(
+              child: Text(
+                errorMessage!,
+                style: const TextStyle(color: Colors.red),
+              ),
+            )
+          : ListView.builder(
+              itemCount: publicSets.length,
+              itemBuilder: (context, index) {
+                final set = publicSets[index];
+                return ListTile(
+                  title: Text(set.title),
+                  subtitle: Text(set.creatorEmail?.email ?? 'Unknown'),
+                );
+              },
             ),
-          )
-        : ListView.builder(
-            itemCount: publicSets.length,
-            itemBuilder: (context, index) {
-              final set = publicSets[index];
-              return ListTile(
-                title: Text(set.title),
-                subtitle: Text(set.creatorEmail?.email ?? 'Unknown'),
-              );
-            },
-          ),
       floatingActionButton: FloatingActionButton(
+        backgroundColor: const Color.fromARGB(255, 210, 179, 211),
         onPressed: () async {
           final result = await Navigator.pushNamed(context, '/new-set');
           if (result == true) {

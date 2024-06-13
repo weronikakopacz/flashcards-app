@@ -48,6 +48,30 @@ class AuthService {
     }
   }
 
+    Future<String?> logoutUser() async {
+    try {
+      final response = await http.post(
+        Uri.parse('http://localhost:8080/api/user/logout'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $_accessToken',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        _accessToken = null;
+        return null;
+      } else {
+        _logger.e('Error during logout: ${response.body}');
+        final errorResponse = jsonDecode(response.body);
+        return errorResponse['error'] ?? 'Logout failed';
+      }
+    } catch (error) {
+      _logger.e('Error during logout: $error');
+      return 'Logout failed: $error';
+    }
+  }
+
   String? getAccessToken() {
     return _accessToken;
   }

@@ -30,3 +30,5 @@ class AuthLoggedIn extends AuthState {
 }
 
 class AuthRegistered extends AuthState {}
+
+class AuthLoggedOut extends AuthState {}

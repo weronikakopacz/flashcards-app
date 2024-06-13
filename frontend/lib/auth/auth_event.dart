@@ -33,3 +33,10 @@ class RegisteredEvent extends AuthEvent {
   @override
   List<Object?> get props => [];
 }
+
+class LogoutEvent extends AuthEvent {
+  const LogoutEvent();
+
+  @override
+  List<Object?> get props => [];
+}
