@@ -2,33 +2,38 @@ import { db } from "../database/FirebaseConfig.js";
 import { addDoc, collection, deleteDoc, doc, getDoc, getDocs, orderBy, query, updateDoc, where } from 'firebase/firestore';
 import { Set } from '../models/ISet.js'
 import { deleteFlashcard } from "../flashcard/FlashcardRepository.js";
+import { getUserData } from "../user/GetUserData.js";
 
 async function getPublicSets(): Promise<{ publicsets: Set[] }> {
-    try {
-      const setsCollection = collection(db, 'sets');
-  
-      let q = query(
-        setsCollection,
-        where('isPublic', '==', true),
-        orderBy('title')
-      );
-  
-      const querySnapshot = await getDocs(q);
-      
-      const publicsets: Set[] = querySnapshot.docs.map((doc) => {
-          const data = doc.data() as Set;
-          return {
-            id: doc.id,
-            ...data
-          };
-      });
-      
-      return { publicsets };
-    } catch (error) {
-      console.error('Error getting sets from the database:', error);
-      throw error;
-    }
+  try {
+    const setsCollection = collection(db, 'sets');
+
+    let q = query(
+      setsCollection,
+      where('isPublic', '==', true),
+      orderBy('title')
+    );
+
+    const querySnapshot = await getDocs(q);
+
+    const publicsets: Set[] = await Promise.all(
+      querySnapshot.docs.map(async (doc) => {
+        const data = doc.data() as Set;
+        const creatorEmail = await getUserData(data.creatorUserId);
+        return {
+          id: doc.id,
+          ...data,
+          creatorEmail: creatorEmail || 'Unknown'
+        };
+      })
+    );
+
+    return { publicsets };
+  } catch (error) {
+    console.error('Error getting sets from the database:', error);
+    throw error;
   }
+}
 
 async function getUserSets(userUid: string): Promise<{ userSets: Set[] }> {
   try {

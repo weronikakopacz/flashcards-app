@@ -21,17 +21,20 @@ class HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _loadPublicSets() async {
-    try {
-      final List<Set> sets = await SetService().getPublicSets();
+  try {
+    final List<Set> sets = await SetService().getPublicSets();
+    if (mounted) {
       setState(() {
         publicSets = sets;
       });
-    } catch (error) {
-      setState(() {
-        errorMessage = error.toString();
-      });
     }
+  } catch (error) {
+    setState(() {
+      errorMessage = error.toString();
+    });
   }
+}
+
 
   @override
   Widget build(BuildContext context) {
@@ -52,7 +55,7 @@ class HomeScreenState extends State<HomeScreen> {
               final set = publicSets[index];
               return ListTile(
                 title: Text(set.title),
-                subtitle: Text(set.creatorUserId ?? ''),
+                subtitle: Text(set.creatorEmail?.email ?? 'Unknown'),
               );
             },
           ),
@@ -60,7 +63,6 @@ class HomeScreenState extends State<HomeScreen> {
         onPressed: () async {
           final result = await Navigator.pushNamed(context, '/new-set');
           if (result == true) {
-            // Refresh the list if a new set was created
             _loadPublicSets();
           }
         },

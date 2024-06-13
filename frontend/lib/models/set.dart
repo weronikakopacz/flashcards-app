@@ -1,13 +1,13 @@
 class Set {
   final String? id;
   final String title;
-  final String? creatorUserId;
+  final CreatorEmail? creatorEmail;
   final bool isPublic;
 
   Set({
     this.id,
     required this.title,
-    this.creatorUserId,
+    this.creatorEmail,
     required this.isPublic,
   });
 
@@ -15,15 +15,42 @@ class Set {
     return Set(
       id: json['id'],
       title: json['title'],
-      creatorUserId: json['creatorUserId'],
+      creatorEmail: json['creatorEmail'] != null ? CreatorEmail.fromJson(json['creatorEmail']) : null,
       isPublic: json['isPublic'],
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
+      'id': id,
       'title': title,
       'isPublic': isPublic,
+      'creatorEmail': creatorEmail?.toJson(),
+    };
+  }
+}
+
+
+class CreatorEmail {
+  final String email;
+  final String uid;
+
+  CreatorEmail({
+    required this.email,
+    required this.uid,
+  });
+
+  factory CreatorEmail.fromJson(Map<String, dynamic> json) {
+    return CreatorEmail(
+      email: json['email'],
+      uid: json['uid'],
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'email': email,
+      'uid': uid,
     };
   }
 }
