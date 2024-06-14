@@ -26,9 +26,9 @@ class CreateSetScreenState extends State<CreateSetScreen> {
       final state = authBloc.state;
       if (state is AuthLoggedIn) {
         final accessToken = state.accessToken;
-        await SetService().addSet(newSet, accessToken);
+        final setId = await SetService().addSet(newSet, accessToken);
         // ignore: use_build_context_synchronously
-        Navigator.pop(context, true);
+        Navigator.pushNamed(context, '/set-detail', arguments: setId);
       } else {
         throw 'User not authenticated';
       }
@@ -39,6 +39,10 @@ class CreateSetScreenState extends State<CreateSetScreen> {
     }
   }
 
+  void _cancel() {
+    Navigator.pop(context);
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<AuthBloc, AuthState>(
@@ -46,6 +50,7 @@ class CreateSetScreenState extends State<CreateSetScreen> {
         return Scaffold(
           appBar: AppBar(
             title: const Text('Create New Set'),
+            automaticallyImplyLeading: false,
           ),
           body: Padding(
             padding: const EdgeInsets.all(16.0),
@@ -76,6 +81,11 @@ class CreateSetScreenState extends State<CreateSetScreen> {
                 ElevatedButton(
                   onPressed: () => _createSet(BlocProvider.of<AuthBloc>(context)),
                   child: const Text('Create Set'),
+                ),
+                const SizedBox(height: 16.0),
+                ElevatedButton(
+                  onPressed: _cancel,
+                  child: const Text('Cancel'),
                 ),
                 if (_errorMessage != null)
                   Padding(

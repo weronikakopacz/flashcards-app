@@ -4,6 +4,7 @@ import 'package:frontend/screens/create_set_screen.dart';
 import 'package:frontend/screens/home_screen.dart';
 import 'package:frontend/screens/login_screen.dart';
 import 'package:frontend/screens/registration_screen.dart';
+import 'package:frontend/screens/set_detail_screen.dart';
 import 'package:frontend/auth/auth_bloc.dart';
 import 'package:frontend/services/auth_service.dart';
 
@@ -29,6 +30,15 @@ class MyApp extends StatelessWidget {
           '/registration': (context) => const RegistrationScreen(),
           '/home': (context) => const HomeScreen(),
           '/new-set': (context) => const CreateSetScreen(),
+        },
+        onGenerateRoute: (settings) {
+          if (settings.name == '/set-detail') {
+            final setId = settings.arguments as String;
+            return MaterialPageRoute(
+              builder: (context) => SetDetailScreen(setId: setId),
+            );
+          }
+          return null;
         },
       ),
     );

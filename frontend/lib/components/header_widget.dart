@@ -10,6 +10,7 @@ class HeaderWidget extends StatelessWidget {
     final authBloc = BlocProvider.of<AuthBloc>(context);
 
     return AppBar(
+      automaticallyImplyLeading: false,
       backgroundColor: const Color.fromARGB(255, 210, 179, 211),
       title: const Text('Fishcard App'),
       actions: <Widget>[

@@ -35,6 +35,27 @@ async function getPublicSets(): Promise<{ publicsets: Set[] }> {
   }
 }
 
+async function getSet(setId: string): Promise<Set> {
+  try {
+    const setsCollection = collection(db, 'sets');
+    const setRef = doc(setsCollection, setId);
+    const setSnapshot = await getDoc(setRef);
+
+    if (setSnapshot.exists()) {
+      const data = setSnapshot.data() as Set;
+      return {
+        id: setSnapshot.id,
+        ...data,
+      };
+    } else {
+      throw new Error('Set not found');
+    }
+  } catch (error) {
+    console.error('Error getting set from the database:', error);
+    throw error;
+  }
+}
+
 async function getUserSets(userUid: string): Promise<{ userSets: Set[] }> {
   try {
     const setsCollection = collection(db, 'sets');
@@ -77,6 +98,7 @@ async function addSet(userId: string, newSet: Omit<Set, 'id'>) {
     const docRef = await addDoc(setsCollection, setToAdd);
 
     setToAdd.id = docRef.id;
+    return docRef.id
   } catch (error) {
     console.error('Error adding set to the database:', error);
     throw error;
@@ -127,4 +149,4 @@ async function editSet(userId: string, setId: string, updatedFields: Pick<Set, '
   }
 }
 
-export { getPublicSets, getUserSets, addSet, deleteSet, editSet };
+export { getPublicSets, getUserSets, addSet, deleteSet, editSet, getSet };

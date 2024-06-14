@@ -22,7 +22,7 @@ class SetService {
     }
   }
 
-  Future<void> addSet(Set newSet, String accessToken) async {
+  Future<String> addSet(Set newSet, String accessToken) async {
     try {
       final url = Uri.parse('http://localhost:8080/api/sets/add');
       final headers = {
@@ -33,7 +33,9 @@ class SetService {
       final response = await http.post(url, headers: headers, body: body);
 
       if (response.statusCode == 201) {
+        final responseBody = jsonDecode(response.body);
         _logger.i('Set added successfully');
+        return responseBody['id'];
       } else {
         throw Exception('Failed to add set: ${response.statusCode}');
       }
@@ -41,5 +43,23 @@ class SetService {
       _logger.e('Error adding set: $error');
       throw Exception('Error adding set: $error');
     }
+  }
+
+  Future<Set> getSet(String setId) async {
+  try {
+    final url = Uri.parse('http://localhost:8080/api/sets/getSet/$setId');
+    final response = await http.get(url);
+
+    if (response.statusCode == 200) {
+      final Map<String, dynamic> jsonResponse = json.decode(response.body);
+      final Map<String, dynamic> setJson = jsonResponse['set'];
+      return Set.fromJson(setJson);
+    } else {
+      throw Exception('Failed to load set: ${response.statusCode}');
+    }
+  } catch (error) {
+    _logger.e('Error fetching set: $error');
+    throw Exception('Error fetching set: $error');
+  }
   }
 }

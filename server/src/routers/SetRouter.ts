@@ -1,6 +1,6 @@
 import express from 'express';
 import { Set } from '../models/ISet.ts';
-import { addSet, deleteSet, editSet, getPublicSets, getUserSets } from '../set/SetRepository.ts';
+import { addSet, deleteSet, editSet, getPublicSets, getSet, getUserSets } from '../set/SetRepository.ts';
 import verifyToken, { DecodedToken } from '../user/VerifyToken.ts';
 
 const setRouter = express.Router();
@@ -21,9 +21,10 @@ setRouter.post('/add', async (req, res) => {
     if (!userUid) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
-    await addSet(userUid, newSet);
 
-    res.status(201).send('Set added successfully');
+    const setId = await addSet(userUid, newSet);
+
+    res.status(201).json({ id: setId });
   } catch (error) {
     console.error('Error handling POST request:', error);
     res.status(500).send('Internal Server Error');
@@ -71,6 +72,17 @@ setRouter.get('/getUserSets/:userUid', async (req, res) => {
     res.status(200).json({ sets: userSets });
   } catch (error) {
     console.error('Error getting user sets:', error);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
+setRouter.get('/getSet/:setId', async (req, res) => {
+  try {
+    const setId = req.params.setId;
+    const set = await getSet(setId);
+    res.status(200).json({ set });
+  } catch (error) {
+    console.error('Error getting set:', error);
     res.status(500).send('Internal Server Error');
   }
 });
