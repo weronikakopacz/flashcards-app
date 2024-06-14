@@ -22,6 +22,33 @@ class SetService {
     }
   }
 
+  Future<List<Set>> getUserSets(String accessToken) async {
+    try {
+      final response = await http.get(
+        Uri.parse('http://localhost:8080/api/sets/getUserSets'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $accessToken',
+        },
+      );
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> data = jsonDecode(response.body);
+        final List<dynamic> userSetsJson = data['sets']['userSets'];
+
+        final List<Set> userSets = userSetsJson.map((setJson) {
+          return Set.fromJson(setJson);
+        }).toList();
+
+        return userSets;
+      } else {
+        throw Exception('Failed to load user sets');
+      }
+    } catch (error) {
+      _logger.e('Error getting user sets: $error');
+      throw Exception('Error getting user sets: $error');
+    }
+  }
+
   Future<String> addSet(Set newSet, String accessToken) async {
     try {
       final url = Uri.parse('http://localhost:8080/api/sets/add');

@@ -48,13 +48,13 @@ class AuthService {
     }
   }
 
-    Future<String?> logoutUser() async {
+    Future<String?> logoutUser(String accessToken) async {
     try {
       final response = await http.post(
         Uri.parse('http://localhost:8080/api/user/logout'),
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'Bearer $_accessToken',
+          'Authorization': 'Bearer $accessToken',
         },
       );
 

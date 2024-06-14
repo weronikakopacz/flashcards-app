@@ -65,9 +65,22 @@ setRouter.get('/getPublicSets', async (req, res) => {
   }
 });
 
-setRouter.get('/getUserSets/:userUid', async (req, res) => {
+setRouter.get('/getUserSets', async (req, res) => {
   try {
-    const userUid = req.params.userUid;
+    const accessToken = req.header('Authorization')?.split(' ')[1];
+    if (!accessToken) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+    const decodedToken: DecodedToken | null = await verifyToken(accessToken);
+    if (!decodedToken) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+    const userUid: string | undefined = decodedToken.userId;
+
+    if (!userUid) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+    
     const userSets = await getUserSets(userUid);
     res.status(200).json({ sets: userSets });
   } catch (error) {
