@@ -118,19 +118,29 @@ userRouter.get('/userid', async (req: Request, res: Response) => {
   }
 });
 
-userRouter.get('/user/:userUid', async (req: Request, res: Response) => {
+userRouter.get('/email', async (req: Request, res: Response) => {
   try {
-    const uid = req.params.userUid;
-    const userData: UserData | null = await getUserData(uid);
+    const accessToken = req.header('Authorization')?.split(' ')[1];
+    if (!accessToken) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    const decodedToken: DecodedToken | null = await verifyToken(accessToken);
+    if (!decodedToken) {
+      return res.status(401).json({ error: 'Invalid token' });
+    }
+
+    const userUid = decodedToken.userId;
+    const userData: UserData | null = await getUserData(userUid);
 
     if (userData) {
-      res.status(200).json({ email: userData.email });
+      return res.status(200).json({ email: userData.email });
     } else {
-      res.status(404).json({ error: 'User not found' });
+      return res.status(404).json({ error: 'User not found' });
     }
   } catch (error) {
-    console.error('Error getting email by id:', error);
-    res.status(500).json({ error: 'Internal Server Error' });
+    console.error('Error getting user email:', error);
+    return res.status(500).json({ error: 'Internal Server Error' });
   }
 });
 

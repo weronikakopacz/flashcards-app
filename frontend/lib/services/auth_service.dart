@@ -78,7 +78,10 @@ class AuthService {
       final url = Uri.parse('$baseUrl/api/user/userid');
       final response = await http.get(
         url,
-        headers: {'Authorization': 'Bearer $accessToken'},
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $accessToken',
+        },
       );
 
       if (response.statusCode == 200) {
@@ -92,6 +95,31 @@ class AuthService {
     } catch (error) {
       _logger.e('Error fetching user id: $error');
       throw 'Error fetching user id: $error';
+    }
+  }
+
+  Future<String?> getUserEmail(String accessToken) async {
+    try {
+      final url = Uri.parse('$baseUrl/api/user/email');
+      final response = await http.get(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $accessToken',
+        },
+      );
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> userEmailMap = jsonDecode(response.body);
+        final String userEmail = userEmailMap['email'];
+        _logger.i('Fetched user email: $userEmail');
+        return userEmail;
+      } else {
+        _logger.e('Failed to fetch user email: ${response.statusCode}');
+        throw 'Failed to fetch user email: ${response.statusCode}';
+      }
+    } catch (error) {
+      _logger.e('Error fetching user email: $error');
+      throw 'Error fetching user email: $error';
     }
   }
 

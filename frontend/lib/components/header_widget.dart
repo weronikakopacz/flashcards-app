@@ -1,9 +1,39 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:frontend/auth/auth_bloc.dart';
+import 'package:frontend/services/auth_service.dart';
 
-class HeaderWidget extends StatelessWidget {
+class HeaderWidget extends StatefulWidget {
   const HeaderWidget({super.key});
+
+  @override
+  HeaderWidgetState createState() => HeaderWidgetState();
+}
+
+class HeaderWidgetState extends State<HeaderWidget> {
+  String? userEmail;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchUserData();
+  }
+
+  Future<void> _fetchUserData() async {
+    try {
+      final authBloc = BlocProvider.of<AuthBloc>(context);
+      final state = authBloc.state;
+      if (state is AuthLoggedIn) {
+        final accessToken = state.accessToken;
+        final email = await AuthService().getUserEmail(accessToken);
+        setState(() {
+          userEmail = email;
+        });
+      }
+    } catch (error) {
+      throw 'User not authenticated';
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -19,8 +49,8 @@ class HeaderWidget extends StatelessWidget {
       actions: <Widget>[
         const SizedBox(width: 16),
         const Text(
-        'Fishcard App',
-         style: TextStyle(color: Colors.black, fontSize: 20, fontWeight: FontWeight.bold),
+          'Fishcard App',
+          style: TextStyle(color: Colors.black, fontSize: 20, fontWeight: FontWeight.bold),
         ),
         const SizedBox(width: 16),
         IconButton(
@@ -36,15 +66,25 @@ class HeaderWidget extends StatelessWidget {
           },
         ),
         const Spacer(),
-        TextButton(
-          onPressed: () {
-            authBloc.add(const LogoutEvent());
-            Navigator.pushReplacementNamed(context, '/login');
+        PopupMenuButton<String>(
+          icon: const Icon(Icons.account_circle, color: Color.fromARGB(255, 22, 22, 22)),
+          onSelected: (value) {
+            if (value == 'logout') {
+              authBloc.add(const LogoutEvent());
+              Navigator.pushReplacementNamed(context, '/login');
+            }
           },
-          child: const Text(
-            'Logout',
-            style: TextStyle(color: Color.fromARGB(255, 22, 22, 22)),
-          ),
+          itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+            if (userEmail != null)
+              PopupMenuItem<String>(
+                value: 'email',
+                child: Text(userEmail!),
+              ),
+            const PopupMenuItem<String>(
+              value: 'logout',
+              child: Text('Logout'),
+            ),
+          ],
         ),
         const SizedBox(width: 16),
       ],
