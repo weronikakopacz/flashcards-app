@@ -4,6 +4,7 @@ import { addSet, deleteSet, editSet, getPublicSets, getSet, getUserSets } from '
 import verifyToken, { DecodedToken } from '../user/VerifyToken.ts';
 
 const setRouter = express.Router();
+const PAGE_NUMBER = 10;
 
 setRouter.post('/add', async (req, res) => {
   try {
@@ -57,8 +58,17 @@ setRouter.delete('/delete/:setId', async (req, res) => {
 
 setRouter.get('/getPublicSets', async (req, res) => {
   try {
-    const publicSets = await getPublicSets();
-    res.status(200).json({ sets: publicSets });
+    const currentPage = parseInt(req.query.currentPage as string, 10) || 1;
+    const searchQuery = req.query.searchQuery as string | undefined;
+
+    const publicSets = await getPublicSets(PAGE_NUMBER, searchQuery,);
+
+    const startIdx = (currentPage - 1) * PAGE_NUMBER;
+    const endIdx = startIdx + PAGE_NUMBER;
+    const limitedpublicSets = publicSets.publicsets.slice(startIdx, endIdx);
+
+    const totalPages = publicSets.totalPages;
+    res.status(200).json({ sets: limitedpublicSets, totalPages });
   } catch (error) {
     console.error('Error getting public sets:', error);
     res.status(500).send('Internal Server Error');
@@ -80,9 +90,19 @@ setRouter.get('/getUserSets', async (req, res) => {
     if (!userUid) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
+
+    const currentPage = parseInt(req.query.currentPage as string, 10) || 1;
+    const searchQuery = req.query.searchQuery as string | undefined;
     
-    const userSets = await getUserSets(userUid);
-    res.status(200).json({ sets: userSets });
+    const userSets = await getUserSets(userUid, PAGE_NUMBER, searchQuery);
+
+    const startIdx = (currentPage - 1) * PAGE_NUMBER;
+    const endIdx = startIdx + PAGE_NUMBER;
+    const limiteduserSets = userSets.userSets.slice(startIdx, endIdx);
+
+    const totalPages = userSets.totalPages;
+
+    res.status(200).json({ sets: limiteduserSets, totalPages });
   } catch (error) {
     console.error('Error getting user sets:', error);
     res.status(500).send('Internal Server Error');

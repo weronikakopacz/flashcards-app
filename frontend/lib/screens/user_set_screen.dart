@@ -15,6 +15,9 @@ class UserSetScreen extends StatefulWidget {
 class UserSetScreenState extends State<UserSetScreen> {
   late List<Set> userSets;
   String? errorMessage;
+  int currentPage = 1;
+  int totalPages = 1;
+  String? searchQuery;
 
   @override
   void initState() {
@@ -29,10 +32,15 @@ class UserSetScreenState extends State<UserSetScreen> {
       final state = authBloc.state;
       if (state is AuthLoggedIn) {
         final accessToken = state.accessToken;
-        final List<Set> sets = await SetService().getUserSets(accessToken);
+        final result = await SetService().getUserSets(
+          accessToken: accessToken,
+          currentPage: currentPage,
+          searchQuery: searchQuery,
+        );
         if (mounted) {
           setState(() {
-            userSets = sets;
+            userSets = result['sets'];
+            totalPages = result['totalPages'];
           });
         }
       } else {
@@ -45,6 +53,21 @@ class UserSetScreenState extends State<UserSetScreen> {
     }
   }
 
+  void _onSearchChanged(String query) {
+    setState(() {
+      searchQuery = query;
+      currentPage = 1;
+    });
+    _loadUserSets();
+  }
+
+  void _onPageChanged(int page) {
+    setState(() {
+      currentPage = page;
+    });
+    _loadUserSets();
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<AuthBloc, AuthState>(
@@ -54,29 +77,59 @@ class UserSetScreenState extends State<UserSetScreen> {
             preferredSize: Size.fromHeight(kToolbarHeight),
             child: HeaderWidget(),
           ),
-          body: errorMessage != null
-              ? Center(
-                  child: Text(
-                    errorMessage!,
-                    style: const TextStyle(color: Colors.red),
+          body: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: TextField(
+                  decoration: const InputDecoration(
+                    labelText: 'Search',
+                    prefixIcon: Icon(Icons.search),
                   ),
-                )
-              : ListView.builder(
-                  itemCount: userSets.length,
-                  itemBuilder: (context, index) {
-                    final set = userSets[index];
-                    return ListTile(
-                      title: Text(set.title),
-                      onTap: () async {
-                        await Navigator.pushNamed(
-                          context,
-                          '/set-detail',
-                          arguments: set.id,
-                        );
-                      },
-                    );
-                  },
+                  onChanged: _onSearchChanged,
                 ),
+              ),
+              Expanded(
+                child: errorMessage != null
+                    ? Center(
+                        child: Text(
+                          errorMessage!,
+                          style: const TextStyle(color: Colors.red),
+                        ),
+                      )
+                    : ListView.builder(
+                        itemCount: userSets.length,
+                        itemBuilder: (context, index) {
+                          final set = userSets[index];
+                          return ListTile(
+                            title: Text(set.title),
+                            onTap: () async {
+                              await Navigator.pushNamed(
+                                context,
+                                '/set-detail',
+                                arguments: set.id,
+                              );
+                            },
+                          );
+                        },
+                      ),
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.arrow_back),
+                    onPressed: currentPage > 1 ? () => _onPageChanged(currentPage - 1) : null,
+                  ),
+                  Text('Page $currentPage of $totalPages'),
+                  IconButton(
+                    icon: const Icon(Icons.arrow_forward),
+                    onPressed: currentPage < totalPages ? () => _onPageChanged(currentPage + 1) : null,
+                  ),
+                ],
+              ),
+            ],
+          ),
           floatingActionButton: FloatingActionButton(
             backgroundColor: const Color.fromARGB(255, 210, 179, 211),
             onPressed: () async {

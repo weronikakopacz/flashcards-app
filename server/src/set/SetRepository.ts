@@ -4,7 +4,10 @@ import { Set } from '../models/ISet.js'
 import { deleteFlashcard } from "../flashcard/FlashcardRepository.js";
 import { getUserData } from "../user/GetUserData.js";
 
-async function getPublicSets(): Promise<{ publicsets: Set[] }> {
+async function getPublicSets(
+  pageSize: number,
+  searchQuery?: string,
+): Promise<{ publicsets: Set[]; totalPages: number }> {
   try {
     const setsCollection = collection(db, 'sets');
 
@@ -13,6 +16,16 @@ async function getPublicSets(): Promise<{ publicsets: Set[] }> {
       where('isPublic', '==', true),
       orderBy('title')
     );
+
+    if (searchQuery) {
+      q = query(
+        setsCollection,
+        where('isPublic', '==', true),
+        where('title', '>=', searchQuery),
+        where('title', '<=', searchQuery + '\uf8ff'),
+        orderBy('title')
+      );
+    }
 
     const querySnapshot = await getDocs(q);
 
@@ -28,7 +41,10 @@ async function getPublicSets(): Promise<{ publicsets: Set[] }> {
       })
     );
 
-    return { publicsets };
+    const totalProducts = await getDocs(q).then((snapshot) => snapshot.size);
+    const totalPages = Math.ceil(totalProducts / pageSize);
+
+    return { publicsets: publicsets, totalPages };
   } catch (error) {
     console.error('Error getting sets from the database:', error);
     throw error;
@@ -56,7 +72,11 @@ async function getSet(setId: string): Promise<Set> {
   }
 }
 
-async function getUserSets(userUid: string): Promise<{ userSets: Set[] }> {
+async function getUserSets(
+  userUid: string,
+  pageSize: number,
+  searchQuery?: string,
+): Promise<{ userSets: Set[], totalPages: number }> {
   try {
     const setsCollection = collection(db, 'sets');
 
@@ -65,6 +85,16 @@ async function getUserSets(userUid: string): Promise<{ userSets: Set[] }> {
       where('creatorUserId', '==', userUid),
       orderBy('title')
     );
+
+    if (searchQuery) {
+      q = query(
+        setsCollection,
+        where('creatorUserId', '==', userUid),
+        where('title', '>=', searchQuery),
+        where('title', '<=', searchQuery + '\uf8ff'),
+        orderBy('title')
+      );
+    }
 
     const querySnapshot = await getDocs(q);
 
@@ -76,7 +106,10 @@ async function getUserSets(userUid: string): Promise<{ userSets: Set[] }> {
       };
     });
 
-    return { userSets };
+    const totalProducts = await getDocs(q).then((snapshot) => snapshot.size);
+    const totalPages = Math.ceil(totalProducts / pageSize);
+
+    return { userSets: userSets, totalPages };
   } catch (error) {
     console.error('Error getting user sets from the database:', error);
     throw error;

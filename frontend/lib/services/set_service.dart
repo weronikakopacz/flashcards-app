@@ -6,13 +6,21 @@ import 'package:logger/logger.dart';
 class SetService {
   final Logger _logger = Logger();
 
-  Future<List<Set>> getPublicSets() async {
+  Future<Map<String, dynamic>> getPublicSets({int currentPage = 1, String? searchQuery}) async {
     try {
-      final response = await http.get(Uri.parse('http://localhost:8080/api/sets/getPublicSets'));
+      final queryParameters = {
+        'currentPage': currentPage.toString(),
+        if (searchQuery != null) 'searchQuery': searchQuery,
+      };
+      final uri = Uri.http('localhost:8080', '/api/sets/getPublicSets', queryParameters);
+      final response = await http.get(uri);
+      
       if (response.statusCode == 200) {
         final Map<String, dynamic> data = jsonDecode(response.body);
-        final List<dynamic> setsJson = data['sets']['publicsets'];
-        return setsJson.map((setJson) => Set.fromJson(setJson)).toList();
+        final List<dynamic> setsJson = data['sets'];
+        final int totalPages = data['totalPages'];
+        final sets = setsJson.map((setJson) => Set.fromJson(setJson)).toList();
+        return {'sets': sets, 'totalPages': totalPages};
       } else {
         throw Exception('Failed to load public sets');
       }
@@ -22,10 +30,15 @@ class SetService {
     }
   }
 
-  Future<List<Set>> getUserSets(String accessToken) async {
+  Future<Map<String, dynamic>> getUserSets({required String accessToken, int currentPage = 1, String? searchQuery}) async {
     try {
+      final queryParameters = {
+        'currentPage': currentPage.toString(),
+        if (searchQuery != null) 'searchQuery': searchQuery,
+      };
+      final uri = Uri.http('localhost:8080', '/api/sets/getUserSets', queryParameters);
       final response = await http.get(
-        Uri.parse('http://localhost:8080/api/sets/getUserSets'),
+        uri,
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $accessToken',
@@ -33,13 +46,14 @@ class SetService {
       );
       if (response.statusCode == 200) {
         final Map<String, dynamic> data = jsonDecode(response.body);
-        final List<dynamic> userSetsJson = data['sets']['userSets'];
+        final List<dynamic> userSetsJson = data['sets'];
 
         final List<Set> userSets = userSetsJson.map((setJson) {
           return Set.fromJson(setJson);
         }).toList();
+        final int totalPages = data['totalPages'];
 
-        return userSets;
+        return {'sets': userSets, 'totalPages': totalPages};
       } else {
         throw Exception('Failed to load user sets');
       }
