@@ -86,6 +86,47 @@ class SetService {
     }
   }
 
+  Future<void> deleteSet(String setId, String accessToken) async {
+    try {
+      final url = Uri.parse('http://localhost:8080/api/sets/delete/$setId');
+      final headers = {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $accessToken',
+      };
+      final response = await http.delete(url, headers: headers);
+
+      if (response.statusCode == 200) {
+        _logger.i('Set deleted successfully');
+      } else {
+        throw Exception('Failed to delete set: ${response.statusCode}');
+      }
+    } catch (error) {
+      _logger.e('Error deleting set: $error');
+      throw Exception('Error deleting set: $error');
+    }
+  }
+
+  Future<void> editSet(String setId, Set updatedFields, String accessToken) async {
+    try {
+      final url = Uri.parse('http://localhost:8080/api/sets/edit/$setId');
+      final headers = {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $accessToken',
+      };
+      final body = jsonEncode(updatedFields.toJson());
+      final response = await http.put(url, headers: headers, body: body);
+
+      if (response.statusCode == 204) {
+        _logger.i('Set updated successfully');
+      } else {
+        throw Exception('Failed to update set: ${response.statusCode}');
+      }
+    } catch (error) {
+      _logger.e('Error updating set: $error');
+      throw Exception('Error updating set: $error');
+    }
+  }
+
   Future<Set> getSet(String setId) async {
   try {
     final url = Uri.parse('http://localhost:8080/api/sets/getSet/$setId');

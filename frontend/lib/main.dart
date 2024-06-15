@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:frontend/screens/create_set_screen.dart';
+import 'package:frontend/screens/edit_set_screen.dart';
 import 'package:frontend/screens/home_screen.dart';
 import 'package:frontend/screens/login_screen.dart';
 import 'package:frontend/screens/registration_screen.dart';
@@ -42,6 +43,11 @@ class MyApp extends StatelessWidget {
             final setId = settings.arguments as String;
             return MaterialPageRoute(
               builder: (context) => SetDetailScreen(setId: setId),
+            );
+          } else if (settings.name == '/edit-set') {
+            final setId = settings.arguments as String;
+            return MaterialPageRoute(
+              builder: (context) => EditSetScreen(setId: setId),
             );
           }
           return null;

@@ -4,12 +4,13 @@ import 'package:logger/logger.dart';
 
 class AuthService {
   final Logger _logger = Logger();
+  static const String baseUrl = 'http://localhost:8080';
   String? _accessToken;
 
   Future<String?> registerUser(String email, String password) async {
     try {
       final response = await http.post(
-        Uri.parse('http://localhost:8080/api/user/register'),
+        Uri.parse('$baseUrl/api/user/register'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'email': email, 'password': password}),
       );
@@ -30,7 +31,7 @@ class AuthService {
   Future<String?> loginUser(String email, String password) async {
     try {
       final response = await http.post(
-        Uri.parse('http://localhost:8080/api/user/login'),
+        Uri.parse('$baseUrl/api/user/login'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'email': email, 'password': password}),
       );
@@ -51,7 +52,7 @@ class AuthService {
     Future<String?> logoutUser(String accessToken) async {
     try {
       final response = await http.post(
-        Uri.parse('http://localhost:8080/api/user/logout'),
+        Uri.parse('$baseUrl/api/user/logout'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $accessToken',
@@ -69,6 +70,28 @@ class AuthService {
     } catch (error) {
       _logger.e('Error during logout: $error');
       return 'Logout failed: $error';
+    }
+  }
+
+  Future<String?> fetchUserId(String accessToken) async {
+    try {
+      final url = Uri.parse('$baseUrl/api/user/userid');
+      final response = await http.get(
+        url,
+        headers: {'Authorization': 'Bearer $accessToken'},
+      );
+
+      if (response.statusCode == 200) {
+        final userId = jsonDecode(response.body);
+        _logger.i('Fetched user id: $userId');
+        return userId;
+      } else {
+        _logger.e('Failed to fetch user id: ${response.statusCode}');
+        throw 'Failed to fetch user id: ${response.statusCode}';
+      }
+    } catch (error) {
+      _logger.e('Error fetching user id: $error');
+      throw 'Error fetching user id: $error';
     }
   }
 

@@ -68,6 +68,31 @@ class UserSetScreenState extends State<UserSetScreen> {
     _loadUserSets();
   }
 
+  Future<void> _deleteSet(String setId) async {
+    try {
+      final authBloc = BlocProvider.of<AuthBloc>(context);
+      final state = authBloc.state;
+      if (state is AuthLoggedIn) {
+        final accessToken = state.accessToken;
+        await SetService().deleteSet(setId, accessToken);
+        _loadUserSets();
+      } else {
+        throw 'User not authenticated';
+      }
+    } catch (error) {
+      setState(() {
+        errorMessage = error.toString();
+      });
+    }
+  }
+
+  Future<void> _editSet(String setId) async {
+    final result = await Navigator.pushNamed(context, '/edit-set', arguments: setId);
+    if (result == true) {
+      _loadUserSets();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<AuthBloc, AuthState>(
@@ -103,6 +128,19 @@ class UserSetScreenState extends State<UserSetScreen> {
                           final set = userSets[index];
                           return ListTile(
                             title: Text(set.title),
+                            trailing: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                IconButton(
+                                  icon: const Icon(Icons.edit),
+                                  onPressed: () => _editSet(set.id!),
+                                ),
+                                IconButton(
+                                  icon: const Icon(Icons.delete),
+                                  onPressed: () => _deleteSet(set.id!),
+                                ),
+                              ],
+                            ),
                             onTap: () async {
                               await Navigator.pushNamed(
                                 context,
