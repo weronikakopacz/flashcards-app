@@ -43,13 +43,13 @@ class HeaderWidgetState extends State<HeaderWidget> {
       automaticallyImplyLeading: false,
       backgroundColor: const Color.fromARGB(255, 210, 179, 211),
       title: const Text(
-        'Fishcard App',
+        'Flashcard App',
         style: TextStyle(color: Colors.black),
       ),
       actions: <Widget>[
         const SizedBox(width: 16),
         const Text(
-          'Fishcard App',
+          'Flashcard App',
           style: TextStyle(color: Colors.black, fontSize: 20, fontWeight: FontWeight.bold),
         ),
         const SizedBox(width: 16),
