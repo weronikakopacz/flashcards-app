@@ -46,4 +46,55 @@ class FlashcardService {
       throw Exception('Error fetching flashcards: $error');
     }
   }
+
+  Future<void> editFlashcard(String flashcardId, Map<String, dynamic> updatedFields, String accessToken) async {
+    try {
+      final url = Uri.parse('$baseUrl/api/flashcards/edit/$flashcardId');
+      final headers = {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $accessToken',
+      };
+      final body = jsonEncode(updatedFields);
+      final response = await http.put(url, headers: headers, body: body);
+
+      if (response.statusCode == 204) {
+        _logger.i('Flashcard edited successfully');
+      } else if (response.statusCode == 404) {
+        throw Exception('Flashcard not found');
+      } else if (response.statusCode == 400) {
+        throw Exception('Validation error: ${response.body}');
+      } else if (response.statusCode == 403) {
+        throw Exception('Unauthorized');
+      } else {
+        throw Exception('Failed to edit flashcard: ${response.statusCode}');
+      }
+    } catch (error) {
+      _logger.e('Error editing flashcard: $error');
+      throw Exception('Error editing flashcard: $error');
+    }
+  }
+
+  Future<void> deleteFlashcard(String flashcardId, String accessToken) async {
+    try {
+      final url = Uri.parse('$baseUrl/api/flashcards/delete/$flashcardId');
+      final headers = {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $accessToken',
+      };
+      final response = await http.delete(url, headers: headers);
+
+      if (response.statusCode == 204) {
+        _logger.i('Flashcard deleted successfully');
+      } else if (response.statusCode == 404) {
+        throw Exception('Flashcard not found');
+      } else if (response.statusCode == 403) {
+        throw Exception('Unauthorized');
+      } else {
+        throw Exception('Failed to delete flashcard: ${response.statusCode}');
+      }
+    } catch (error) {
+      _logger.e('Error deleting flashcard: $error');
+      throw Exception('Error deleting flashcard: $error');
+    }
+  }
 }

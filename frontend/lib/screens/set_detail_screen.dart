@@ -3,8 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:frontend/components/flashcard_add_form.dart';
 import 'package:frontend/components/flashcard_list_widget.dart';
 import 'package:frontend/components/header_widget.dart';
-import 'package:frontend/models/set.dart';
 import 'package:frontend/models/flashcard.dart';
+import 'package:frontend/models/set.dart';
 import 'package:frontend/services/auth_service.dart';
 import 'package:frontend/services/flashcard_service.dart';
 import 'package:frontend/services/set_service.dart';
@@ -34,12 +34,6 @@ class SetDetailScreenState extends State<SetDetailScreen> {
     super.initState();
     setFuture = _loadSetDetails();
     _fetchLoggedInUserId();
-    flashcardListWidget = FlashcardListWidget(
-      setId: widget.setId,
-      refreshCallback: () {
-        _refreshFlashcards();
-      },
-    );
   }
 
   Future<void> _fetchLoggedInUserId() async {
@@ -145,62 +139,64 @@ class SetDetailScreenState extends State<SetDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: const PreferredSize(
-        preferredSize: Size.fromHeight(kToolbarHeight),
-        child: HeaderWidget(),
-      ),
-      body: FutureBuilder<Set>(
-        future: setFuture,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          } else if (snapshot.hasError) {
-            return Center(
-              child: Text(
-                'Error: ${snapshot.error}',
-                style: const TextStyle(color: Colors.red),
-              ),
-            );
-          } else if (snapshot.hasData) {
-            final set = snapshot.data!;
-            return _buildSetDetails(set);
-          } else {
-            return const Center(child: Text('Set not found'));
-          }
-        },
-      ),
-    );
-  }
-
-  Widget _buildSetDetails(Set set) {
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text('Title: ${set.title}', style: Theme.of(context).textTheme.titleLarge),
-              if (_isUserAllowedToEdit(set)) _buildActionButtons(),
-            ],
-          ),
-          const SizedBox(height: 16.0),
-          if (isAddingFlashcard)
-            FlashcardAddForm(
-              termController: _termController,
-              definitionController: _definitionController,
-              onAddPressed: _addFlashcard,
-              onCancelPressed: () => _toggleAddingFlashcard(false),
-              onFlashcardAdded: () { flashcardListWidget.refreshFlashcards(); },
+  return Scaffold(
+    appBar: const PreferredSize(
+      preferredSize: Size.fromHeight(kToolbarHeight),
+      child: HeaderWidget(),
+    ),
+    body: FutureBuilder<Set>(
+      future: setFuture,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        } else if (snapshot.hasError) {
+          return Center(
+            child: Text(
+              'Error: ${snapshot.error}',
+              style: const TextStyle(color: Colors.red),
             ),
-          const SizedBox(height: 16.0),
-          Expanded(child: flashcardListWidget),
-        ],
-      ),
-    );
-  }
+          );
+        } else if (snapshot.hasData) {
+          final set = snapshot.data!;
+          flashcardListWidget = FlashcardListWidget(
+            setId: widget.setId,
+            set: set,
+            refreshCallback: _refreshFlashcards,
+          );
+
+          return Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text('Title: ${set.title}', style: Theme.of(context).textTheme.titleLarge),
+                    if (_isUserAllowedToEdit(set)) _buildActionButtons(),
+                  ],
+                ),
+                const SizedBox(height: 16.0),
+                if (isAddingFlashcard)
+                  FlashcardAddForm(
+                    termController: _termController,
+                    definitionController: _definitionController,
+                    onAddPressed: _addFlashcard,
+                    onCancelPressed: () => _toggleAddingFlashcard(false),
+                    onFlashcardAdded: () { flashcardListWidget.refreshFlashcards(); },
+                  ),
+                const SizedBox(height: 16.0),
+                Expanded(child: flashcardListWidget),
+              ],
+            ),
+          );
+        } else {
+          return const Center(child: Text('No set details found'));
+        }
+      },
+    ),
+  );
+}
 
   bool _isUserAllowedToEdit(Set set) {
     return set.creatorUserId == loggedInUserId;

@@ -81,15 +81,15 @@ async function deleteFlashcard(flashcardId: string, userId: string) {
 
     const flashcardSnapshot = await getDoc(flashcardRef);
 
-    if (flashcardSnapshot.exists()) {
-      if (flashcardSnapshot.data().creatorUserId === userId) {
-        await deleteDoc(flashcardRef);
-      } else {
-        throw new Error('User is not the creator of the flashcard');
-      }
-    } else {
+    if (!flashcardSnapshot.exists()) {
       throw new Error('Flashcard not found');
     }
+
+    const flashcardData = flashcardSnapshot.data();
+    const setId = flashcardData?.setId;
+
+    await checkUserPermission(userId, setId);
+    await deleteDoc(flashcardRef);
   } catch (error) {
     console.error('Error deleting flashcard in the database:', error);
     throw error;
