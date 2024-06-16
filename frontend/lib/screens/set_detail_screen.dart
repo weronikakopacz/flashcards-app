@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:frontend/components/flashcard_add_form.dart';
+import 'package:frontend/components/flashcard_list_widget.dart';
 import 'package:frontend/components/header_widget.dart';
 import 'package:frontend/models/set.dart';
 import 'package:frontend/models/flashcard.dart';
@@ -26,12 +27,19 @@ class SetDetailScreenState extends State<SetDetailScreen> {
   final _termController = TextEditingController();
   final _definitionController = TextEditingController();
   final Logger _logger = Logger();
+  late FlashcardListWidget flashcardListWidget;
 
   @override
   void initState() {
     super.initState();
     setFuture = _loadSetDetails();
     _fetchLoggedInUserId();
+    flashcardListWidget = FlashcardListWidget(
+      setId: widget.setId,
+      refreshCallback: () {
+        _refreshFlashcards();
+      },
+    );
   }
 
   Future<void> _fetchLoggedInUserId() async {
@@ -103,6 +111,7 @@ class SetDetailScreenState extends State<SetDetailScreen> {
     _clearControllers();
     _toggleAddingFlashcard(false);
     _showSnackBar('Flashcard added successfully');
+    _refreshFlashcards();
   }
 
   void _clearControllers() {
@@ -125,6 +134,13 @@ class SetDetailScreenState extends State<SetDetailScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(message)),
     );
+  }
+
+  void _refreshFlashcards() {
+    setState(() {
+      setFuture = _loadSetDetails();
+      flashcardListWidget.refreshFlashcards();
+    });
   }
 
   @override
@@ -167,8 +183,7 @@ class SetDetailScreenState extends State<SetDetailScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text('Title: ${set.title}', style: Theme.of(context).textTheme.titleLarge),
-              if (_isUserAllowedToEdit(set))
-                _buildActionButtons(),
+              if (_isUserAllowedToEdit(set)) _buildActionButtons(),
             ],
           ),
           const SizedBox(height: 16.0),
@@ -178,7 +193,10 @@ class SetDetailScreenState extends State<SetDetailScreen> {
               definitionController: _definitionController,
               onAddPressed: _addFlashcard,
               onCancelPressed: () => _toggleAddingFlashcard(false),
+              onFlashcardAdded: () { flashcardListWidget.refreshFlashcards(); },
             ),
+          const SizedBox(height: 16.0),
+          Expanded(child: flashcardListWidget),
         ],
       ),
     );

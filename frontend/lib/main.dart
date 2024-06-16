@@ -17,41 +17,68 @@ void main() async {
   runApp(MyApp(prefs: prefs));
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   final SharedPreferences prefs;
   const MyApp({super.key, required this.prefs});
 
   @override
+  MyAppState createState() => MyAppState();
+}
+
+class MyAppState extends State<MyApp> {
+  late AuthBloc _authBloc;
+  String _initialRoute = '/login';
+
+  @override
+  void initState() {
+    super.initState();
+    _authBloc = AuthBloc(AuthService(), prefs: widget.prefs)..add(const CheckLoginEvent());
+  }
+
+  @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => AuthBloc(AuthService(), prefs: prefs)..add(const CheckLoginEvent()),
-      child: MaterialApp(
-        title: 'My App',
-        theme: ThemeData(
-          primarySwatch: Colors.blue,
-        ),
-        initialRoute: '/login',
-        routes: {
-          '/login': (context) => const LoginScreen(),
-          '/registration': (context) => const RegistrationScreen(),
-          '/home': (context) => const HomeScreen(),
-          '/new-set': (context) => const CreateSetScreen(),
-          '/user-sets': (context) => const UserSetScreen(),
-        },
-        onGenerateRoute: (settings) {
-          if (settings.name == '/set-detail') {
-            final setId = settings.arguments as String;
-            return MaterialPageRoute(
-              builder: (context) => SetDetailScreen(setId: setId),
-            );
-          } else if (settings.name == '/edit-set') {
-            final setId = settings.arguments as String;
-            return MaterialPageRoute(
-              builder: (context) => EditSetScreen(setId: setId),
-            );
+      create: (context) => _authBloc,
+      child: BlocListener<AuthBloc, AuthState>(
+        listener: (context, state) {
+          if (state is AuthLoggedIn) {
+            setState(() {
+              _initialRoute = '/home';
+            });
+          } else {
+            setState(() {
+              _initialRoute = '/login';
+            });
           }
-          return null;
         },
+        child: MaterialApp(
+          title: 'My App',
+          theme: ThemeData(
+            primarySwatch: Colors.blue,
+          ),
+          initialRoute: _initialRoute,
+          routes: {
+            '/login': (context) => const LoginScreen(),
+            '/registration': (context) => const RegistrationScreen(),
+            '/home': (context) => const HomeScreen(),
+            '/new-set': (context) => const CreateSetScreen(),
+            '/user-sets': (context) => const UserSetScreen(),
+          },
+          onGenerateRoute: (settings) {
+            if (settings.name == '/set-detail') {
+              final setId = settings.arguments as String;
+              return MaterialPageRoute(
+                builder: (context) => SetDetailScreen(setId: setId),
+              );
+            } else if (settings.name == '/edit-set') {
+              final setId = settings.arguments as String;
+              return MaterialPageRoute(
+                builder: (context) => EditSetScreen(setId: setId),
+              );
+            }
+            return null;
+          },
+        ),
       ),
     );
   }

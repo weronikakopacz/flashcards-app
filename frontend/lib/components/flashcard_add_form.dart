@@ -5,12 +5,15 @@ class FlashcardAddForm extends StatelessWidget {
   final TextEditingController definitionController;
   final VoidCallback onAddPressed;
   final VoidCallback onCancelPressed;
+  final VoidCallback onFlashcardAdded;
 
-  const FlashcardAddForm({super.key, 
+  const FlashcardAddForm({
+    super.key,
     required this.termController,
     required this.definitionController,
     required this.onAddPressed,
     required this.onCancelPressed,
+    required this.onFlashcardAdded,
   });
 
   @override
@@ -30,7 +33,10 @@ class FlashcardAddForm extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             ElevatedButton(
-              onPressed: onAddPressed,
+              onPressed: () {
+                onAddPressed();
+                onFlashcardAdded();
+              },
               child: const Text('Add'),
             ),
             ElevatedButton(

@@ -27,4 +27,23 @@ class FlashcardService {
       throw Exception('Error adding set: $error');
     }
   }
+
+  Future<List<Flashcard>> getFlashcards(String setId) async {
+    try {
+      final url = Uri.parse('$baseUrl/api/flashcards/getFlashcards/$setId');
+      final response = await http.get(url);
+
+      if (response.statusCode == 200) {
+        final List<dynamic> flashcardsJson = jsonDecode(response.body)['flashcards'];
+        final flashcards = flashcardsJson.map((json) => Flashcard.fromJson(json)).toList();
+        _logger.i('Flashcards fetched successfully for set ID: $setId');
+        return flashcards;
+      } else {
+        throw Exception('Failed to fetch flashcards: ${response.statusCode}');
+      }
+    } catch (error) {
+      _logger.e('Error fetching flashcards: $error');
+      throw Exception('Error fetching flashcards: $error');
+    }
+  }
 }
