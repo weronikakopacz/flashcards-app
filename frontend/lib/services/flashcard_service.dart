@@ -47,7 +47,7 @@ class FlashcardService {
     }
   }
 
-  Future<void> editFlashcard(String flashcardId, Map<String, dynamic> updatedFields, String accessToken) async {
+  Future<void> editFlashcard(String flashcardId, String accessToken, Map<String, dynamic> updatedFields) async {
     try {
       final url = Uri.parse('$baseUrl/api/flashcards/edit/$flashcardId');
       final headers = {

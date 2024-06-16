@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:frontend/auth/auth_bloc.dart';
 import 'package:frontend/models/flashcard.dart';
 import 'package:frontend/models/set.dart';
+import 'package:frontend/screens/flashcard_edit_screen.dart';
 import 'package:frontend/services/flashcard_service.dart';
 import 'package:frontend/services/auth_service.dart';
 import 'package:logger/logger.dart';
@@ -131,8 +132,21 @@ class FlashcardListWidgetState extends State<FlashcardListWidget> {
   }
 
   void _editFlashcard(Flashcard flashcard) {
-    // Implementacja logiki edycji fiszki, np. nawigacja do ekranu edycji
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => FlashcardEditScreen(
+          flashcard: flashcard,
+        ),
+      ),
+    ).then((result) {
+      if (result != null && result as bool) {
+        refreshFlashcards();
+      }
+    });
   }
+
+
 
   void _deleteFlashcard(String flashcardId) async {
     try {
