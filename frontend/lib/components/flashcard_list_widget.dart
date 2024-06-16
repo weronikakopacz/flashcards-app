@@ -4,6 +4,7 @@ import 'package:frontend/auth/auth_bloc.dart';
 import 'package:frontend/models/flashcard.dart';
 import 'package:frontend/models/set.dart';
 import 'package:frontend/screens/flashcard_edit_screen.dart';
+import 'package:frontend/screens/flashcard_study_screen.dart';
 import 'package:frontend/services/flashcard_service.dart';
 import 'package:frontend/services/auth_service.dart';
 import 'package:logger/logger.dart';
@@ -69,17 +70,39 @@ class FlashcardListWidgetState extends State<FlashcardListWidget> {
           );
         } else if (snapshot.hasData) {
           final flashcards = snapshot.data!;
-          return ListView.builder(
-            shrinkWrap: true,
-            itemCount: flashcards.length,
-            itemBuilder: (context, index) {
-              final flashcard = flashcards[index];
-              return ListTile(
-                title: Text(flashcard.term),
-                subtitle: Text(flashcard.definition),
-                trailing: _buildActionIcons(flashcard),
-              );
-            },
+          return Column(
+            children: [
+              if (flashcards.isNotEmpty)
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => FlashcardStudyScreen(flashcards: flashcards),
+                        ),
+                      );
+                    },
+                    child: const Text('Start Studying'),
+                  ),
+                ),
+                const SizedBox(height: 20.0),
+              Expanded(
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: flashcards.length,
+                  itemBuilder: (context, index) {
+                    final flashcard = flashcards[index];
+                    return ListTile(
+                      title: Text(flashcard.term),
+                      subtitle: Text(flashcard.definition),
+                      trailing: _buildActionIcons(flashcard),
+                    );
+                  },
+                ),
+              ),
+            ],
           );
         } else {
           return const Center(child: Text('No flashcards found'));
@@ -146,8 +169,6 @@ class FlashcardListWidgetState extends State<FlashcardListWidget> {
     });
   }
 
-
-
   void _deleteFlashcard(String flashcardId) async {
     try {
       final authBloc = BlocProvider.of<AuthBloc>(context);
@@ -156,10 +177,10 @@ class FlashcardListWidgetState extends State<FlashcardListWidget> {
         final accessToken = state.accessToken;
         await FlashcardService().deleteFlashcard(flashcardId, accessToken);
         _logger.i('Flashcard deleted: $flashcardId');
-        refreshFlashcards();}
-      else {
+        refreshFlashcards();
+      } else {
         throw 'User not authenticated';
-        }
+      }
     } catch (error) {
       _logger.e('Error deleting flashcard: $error');
       // ignore: use_build_context_synchronously
