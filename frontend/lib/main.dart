@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:frontend/models/summary_arguments.dart';
 import 'package:frontend/screens/create_set_screen.dart';
 import 'package:frontend/screens/edit_set_screen.dart';
 import 'package:frontend/screens/flashcard_study_screen.dart';
@@ -8,6 +9,7 @@ import 'package:frontend/screens/login_screen.dart';
 import 'package:frontend/screens/registration_screen.dart';
 import 'package:frontend/screens/set_detail_screen.dart';
 import 'package:frontend/auth/auth_bloc.dart';
+import 'package:frontend/screens/summary_screen.dart';
 import 'package:frontend/screens/user_set_screen.dart';
 import 'package:frontend/services/auth_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -65,6 +67,17 @@ class MyAppState extends State<MyApp> {
             '/home': (context) => const HomeScreen(),
             '/new-set': (context) => const CreateSetScreen(),
             '/user-sets': (context) => const UserSetScreen(),
+            '/summary': (context) {
+              final arguments = ModalRoute.of(context)!.settings.arguments as SummaryArguments;
+              return SummaryScreen(
+                knownCount: arguments.knownCount,
+                unknownCount: arguments.unknownCount,
+                onRepeatUnknown: arguments.onRepeatUnknown,
+                onRepeatAll: arguments.onRepeatAll,
+                onFinish: arguments.onFinish,
+                flashcards: arguments.flashcards,
+              );
+            },
           },
           onGenerateRoute: (settings) {
             if (settings.name == '/set-detail') {

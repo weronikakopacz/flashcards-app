@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/components/header_widget.dart';
 import 'package:frontend/models/flashcard.dart';
+import 'package:frontend/screens/summary_screen.dart';
 
 class FlashcardStudyScreen extends StatefulWidget {
   final List<Flashcard> flashcards;
@@ -22,14 +23,14 @@ class FlashcardStudyScreenState extends State<FlashcardStudyScreen> {
   @override
   void initState() {
     super.initState();
+    allFlashcards = List.from(widget.flashcards);
     flashcardStatus = List.filled(widget.flashcards.length, null);
     _initializeFlashcards();
   }
 
   void _initializeFlashcards() {
     setState(() {
-      allFlashcards = List.from(widget.flashcards);
-      remainingFlashcards = List.from(widget.flashcards);
+      remainingFlashcards = List.from(allFlashcards);
       remainingFlashcards.shuffle();
       currentIndex = 0;
       _pickRandomFlashcard();
@@ -49,7 +50,7 @@ class FlashcardStudyScreenState extends State<FlashcardStudyScreen> {
 
   void _markAsKnown(bool isKnown) {
     if (currentFlashcard != null) {
-      final originalIndex = widget.flashcards.indexOf(currentFlashcard!);
+      final originalIndex = allFlashcards.indexOf(currentFlashcard!);
       flashcardStatus[originalIndex] = isKnown;
       currentIndex++;
       _pickRandomFlashcard();
@@ -64,55 +65,41 @@ class FlashcardStudyScreenState extends State<FlashcardStudyScreen> {
 
   void _showSummary() {
     final knownCount = flashcardStatus.where((status) => status == true).length;
-    final unknownCount = flashcardStatus.length - knownCount;
+    final unknownCount = flashcardStatus.where((status) => status == false).length;
 
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Summary'),
-        content: Text('You know $knownCount cards.\nYou don\'t know $unknownCount cards.'),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              _restartLearning(onlyUnknown: true);
-            },
-            child: const Text('Repeat Unknown'),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              _restartLearning(onlyUnknown: false);
-            },
-            child: const Text('Repeat All'),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              Navigator.pop(context);
-            },
-            child: const Text('Finish'),
-          ),
-        ],
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => SummaryScreen(
+          flashcards: allFlashcards,
+          knownCount: knownCount,
+          unknownCount: unknownCount,
+          onRepeatUnknown: _repeatUnknown,
+          onRepeatAll: _initializeFlashcards,
+          onFinish: _finishStudy,
+        ),
       ),
     );
   }
 
-  void _restartLearning({required bool onlyUnknown}) {
-    setState(() {
-      if (onlyUnknown) {
-        remainingFlashcards = allFlashcards.where((flashcard) {
-          final index = allFlashcards.indexOf(flashcard);
-          return flashcardStatus[index] == false;
-        }).toList();
-      } else {
-        remainingFlashcards = List.from(allFlashcards);
+  void _repeatUnknown() {
+    final List<Flashcard> unknownFlashcards = [];
+    for (int i = 0; i < allFlashcards.length; i++) {
+      if (flashcardStatus[i] == false) {
+        unknownFlashcards.add(allFlashcards[i]);
       }
-      remainingFlashcards.shuffle();
-      flashcardStatus = List.filled(remainingFlashcards.length, null);
-      currentIndex = 0;
-      _pickRandomFlashcard();
-    });
+    }
+
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (context) => FlashcardStudyScreen(flashcards: unknownFlashcards),
+      ),
+    );
+  }
+
+  void _finishStudy() {
+    Navigator.pop(context);
   }
 
   Widget _buildProgressIndicator() {
@@ -124,7 +111,7 @@ class FlashcardStudyScreenState extends State<FlashcardStudyScreen> {
           (index) {
             Color color;
             if (index < currentIndex) {
-              final originalIndex = widget.flashcards.indexOf(remainingFlashcards[index]);
+              final originalIndex = allFlashcards.indexOf(remainingFlashcards[index]);
               if (flashcardStatus[originalIndex] == true) {
                 color = Colors.green;
               } else if (flashcardStatus[originalIndex] == false) {
