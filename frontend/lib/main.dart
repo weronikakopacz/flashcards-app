@@ -67,20 +67,26 @@ class MyAppState extends State<MyApp> {
             '/home': (context) => const HomeScreen(),
             '/new-set': (context) => const CreateSetScreen(),
             '/user-sets': (context) => const UserSetScreen(),
-            '/summary': (context) {
-              final arguments = ModalRoute.of(context)!.settings.arguments as SummaryArguments;
-              return SummaryScreen(
-                knownCount: arguments.knownCount,
-                unknownCount: arguments.unknownCount,
-                onRepeatUnknown: arguments.onRepeatUnknown,
-                onRepeatAll: arguments.onRepeatAll,
-                onFinish: arguments.onFinish,
-                flashcards: arguments.flashcards,
-              );
-            },
           },
           onGenerateRoute: (settings) {
-            if (settings.name == '/set-detail') {
+            if (settings.name == '/summary') {
+              final arguments = settings.arguments;
+              if (arguments is SummaryArguments) {
+                return MaterialPageRoute(
+                  builder: (context) => SummaryScreen(
+                    knownCount: arguments.knownCount,
+                    unknownCount: arguments.unknownCount,
+                    onRepeatUnknown: arguments.onRepeatUnknown,
+                    onRepeatAll: arguments.onRepeatAll,
+                    onFinish: arguments.onFinish,
+                    flashcards: arguments.flashcards,
+                  ),
+                );
+              } else {
+                return MaterialPageRoute(
+                  builder: (context) => const HomeScreen(),
+                );}
+            } else if (settings.name == '/set-detail') {
               final setId = settings.arguments as String;
               return MaterialPageRoute(
                 builder: (context) => SetDetailScreen(setId: setId),

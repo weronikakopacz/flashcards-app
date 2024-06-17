@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/components/header_widget.dart';
 import '../models/flashcard.dart';
 
 class SummaryScreen extends StatelessWidget {
@@ -22,9 +23,10 @@ class SummaryScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Summary'),
-      ),
+      appBar: const PreferredSize(
+            preferredSize: Size.fromHeight(kToolbarHeight),
+            child: HeaderWidget(),
+          ),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
