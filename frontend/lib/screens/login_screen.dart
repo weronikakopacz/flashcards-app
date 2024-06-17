@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:frontend/auth/auth_bloc.dart';
+import 'package:frontend/components/custom_button.dart';
 
 class LoginScreen extends StatelessWidget {
   const LoginScreen({super.key});
@@ -77,20 +78,20 @@ class _LoginScreenFormState extends State<_LoginScreenForm> {
               obscureText: true,
             ),
             const SizedBox(height: 16.0),
-            ElevatedButton(
+            CustomButton(
               onPressed: () {
                 final email = emailController.text;
                 final password = passwordController.text;
                 authBloc.add(LoginEvent(email: email, password: password));
               },
-              child: const Text('Login'),
+              text: 'Login',
             ),
             const SizedBox(height: 16.0),
             TextButton(
               onPressed: () {
                 Navigator.pushNamed(context, '/registration');
               },
-              child: const Text('You do not have an account? Register'),
+              child: const Text('You do not have an account? Register', style: TextStyle(color: Colors.black)),
             ),
           ],
         ),

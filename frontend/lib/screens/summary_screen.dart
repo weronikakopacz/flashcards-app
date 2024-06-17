@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/components/custom_button.dart';
 import 'package:frontend/components/header_widget.dart';
 import '../models/flashcard.dart';
 
@@ -9,6 +10,7 @@ class SummaryScreen extends StatelessWidget {
   final VoidCallback onRepeatUnknown;
   final VoidCallback onRepeatAll;
   final VoidCallback onFinish;
+  final List<bool?> flashcardStatus;
 
   const SummaryScreen({
     required this.flashcards,
@@ -17,6 +19,7 @@ class SummaryScreen extends StatelessWidget {
     required this.onRepeatUnknown,
     required this.onRepeatAll,
     required this.onFinish,
+    required this.flashcardStatus,
     super.key,
   });
 
@@ -24,32 +27,64 @@ class SummaryScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: const PreferredSize(
-            preferredSize: Size.fromHeight(kToolbarHeight),
-            child: HeaderWidget(),
-          ),
+        preferredSize: Size.fromHeight(kToolbarHeight),
+        child: HeaderWidget(),
+      ),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            Text('Known Count: $knownCount'),
-            Text('Unknown Count: $unknownCount'),
             const SizedBox(height: 20),
-            ElevatedButton(
+            Text('Known Count: $knownCount', style: const TextStyle(color: Colors.green, fontSize: 20)),
+            Text('Unknown Count: $unknownCount', style: const TextStyle(color: Colors.red, fontSize: 20)),
+            const SizedBox(height: 20),
+            CustomButton(
+              text: 'Repeat All',
               onPressed: onRepeatAll,
-              child: const Text('Repeat All'),
+              width: 150,
             ),
-            if (unknownCount > 0)
-              ...[
-                const SizedBox(height: 20),
-                ElevatedButton(
-                  onPressed: onRepeatUnknown,
-                  child: const Text('Repeat Unknown'),
-                ),
-              ],
+            if (unknownCount > 0) ...[
+              const SizedBox(height: 20),
+              CustomButton(
+                onPressed: onRepeatUnknown,
+                text: 'Repeat Unknown',
+                width: 150,
+              ),
+            ],
             const SizedBox(height: 20),
-            ElevatedButton(
+            CustomButton(
               onPressed: onFinish,
-              child: const Text('Finish'),
+              text: 'Finish',
+              width: 150,
+            ),
+            const SizedBox(height: 20),
+            Expanded(
+              child: ListView.builder(
+                itemCount: flashcards.length,
+                itemBuilder: (context, index) {
+                  Flashcard flashcard = flashcards[index];
+                  bool? isCorrect = flashcardStatus[index];
+
+                  return ListTile(
+                    title: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Term: ${flashcard.term}',
+                          style: TextStyle(
+                          color: isCorrect == true ? Colors.green : isCorrect == false ? Colors.red : Colors.black,
+                        )),
+                        Text(
+                          'Definition: ${flashcard.definition}',
+                          style: TextStyle(
+                            color: isCorrect == true ? Colors.green : isCorrect == false ? Colors.red : Colors.black,
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
             ),
           ],
         ),

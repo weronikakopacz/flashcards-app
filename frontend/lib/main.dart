@@ -80,6 +80,7 @@ class MyAppState extends State<MyApp> {
                     onRepeatAll: arguments.onRepeatAll,
                     onFinish: arguments.onFinish,
                     flashcards: arguments.flashcards,
+                    flashcardStatus: arguments.flashcardStatus,
                   ),
                 );
               } else {

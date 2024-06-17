@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:frontend/components/custom_button.dart';
 import 'package:frontend/models/set.dart';
 import 'package:frontend/services/set_service.dart';
 import 'package:frontend/auth/auth_bloc.dart';
@@ -106,14 +107,14 @@ class EditSetScreenState extends State<EditSetScreen> {
                           const Text('Public'),
                         ],
                       ),
-                      ElevatedButton(
+                      CustomButton(
                         onPressed: () => _updateSet(BlocProvider.of<AuthBloc>(context)),
-                        child: const Text('Update Set'),
+                        text: 'Update Set',
                       ),
                       const SizedBox(height: 16.0),
-                      ElevatedButton(
+                      CustomButton(
                         onPressed: _cancel,
-                        child: const Text('Cancel'),
+                        text:'Cancel',
                       ),
                       if (_errorMessage != null)
                         Padding(

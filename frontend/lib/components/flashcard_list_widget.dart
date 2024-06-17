@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:frontend/auth/auth_bloc.dart';
+import 'package:frontend/components/custom_button.dart';
 import 'package:frontend/models/flashcard.dart';
 import 'package:frontend/models/set.dart';
 import 'package:frontend/screens/flashcard_edit_screen.dart';
@@ -74,7 +75,7 @@ class FlashcardListWidgetState extends State<FlashcardListWidget> {
               if (flashcards.isNotEmpty)
                 Align(
                   alignment: Alignment.centerLeft,
-                  child: ElevatedButton(
+                  child: CustomButton(
                     onPressed: () {
                       Navigator.pushNamed(
                         context,
@@ -82,7 +83,7 @@ class FlashcardListWidgetState extends State<FlashcardListWidget> {
                         arguments: flashcards,
                       );
                     },
-                    child: const Text('Start Studying'),
+                    text: 'Start Studying',
                   ),
                 ),
                 const SizedBox(height: 20.0),

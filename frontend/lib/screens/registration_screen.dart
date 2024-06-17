@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:frontend/auth/auth_bloc.dart';
+import 'package:frontend/components/custom_button.dart';
 
 class RegistrationScreen extends StatefulWidget {
   const RegistrationScreen({super.key});
@@ -65,9 +66,9 @@ class RegistrationScreenState extends State<RegistrationScreen> {
                     obscureText: true,
                   ),
                   const SizedBox(height: 16.0),
-                  ElevatedButton(
+                  CustomButton(
                     onPressed: () => _registerUser(context),
-                    child: const Text('Register'),
+                    text: 'Register',
                   ),
                   if (errorMessage != null) ...[
                     const SizedBox(height: 16.0),

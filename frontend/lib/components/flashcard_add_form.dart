@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/components/custom_button.dart';
 
 class FlashcardAddForm extends StatelessWidget {
   final TextEditingController termController;
@@ -32,16 +33,16 @@ class FlashcardAddForm extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-            ElevatedButton(
+            CustomButton(
               onPressed: () {
                 onAddPressed();
                 onFlashcardAdded();
               },
-              child: const Text('Add'),
+              text: 'Add',
             ),
-            ElevatedButton(
+            CustomButton(
               onPressed: onCancelPressed,
-              child: const Text('Cancel'),
+              text: 'Cancel',
             ),
           ],
         ),

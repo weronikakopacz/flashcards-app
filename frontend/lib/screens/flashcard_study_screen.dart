@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/components/custom_button.dart';
 import 'package:frontend/components/header_widget.dart';
 import 'package:frontend/models/flashcard.dart';
 import 'package:frontend/models/summary_arguments.dart';
@@ -68,17 +69,18 @@ class FlashcardStudyScreenState extends State<FlashcardStudyScreen> {
     final unknownCount = flashcardStatus.where((status) => status == false).length;
 
     Navigator.pushNamed(
-    context,
-    '/summary',
-    arguments: SummaryArguments(
-      knownCount: knownCount,
-      unknownCount: unknownCount,
-      onRepeatUnknown: _repeatUnknown,
-      onRepeatAll: _repeatAll,
-      onFinish: _finishStudy,
-      flashcards: allFlashcards,
-    ),
-  );
+      context,
+      '/summary',
+      arguments: SummaryArguments(
+        knownCount: knownCount,
+        unknownCount: unknownCount,
+        onRepeatUnknown: _repeatUnknown,
+        onRepeatAll: _repeatAll,
+        onFinish: _finishStudy,
+        flashcards: allFlashcards,
+        flashcardStatus: flashcardStatus,
+      ),
+    );
   }
 
   void _repeatAll() {
@@ -89,7 +91,6 @@ class FlashcardStudyScreenState extends State<FlashcardStudyScreen> {
       ),
     );
   }
-
 
   void _repeatUnknown() {
     final List<Flashcard> unknownFlashcards = [];
@@ -193,51 +194,25 @@ class FlashcardStudyScreenState extends State<FlashcardStudyScreen> {
                     ),
                   ),
                   const SizedBox(height: 40.0),
-                  ElevatedButton(
+                  CustomButton(
                     onPressed: _toggleCard,
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(horizontal: 30.0, vertical: 15.0),
-                      backgroundColor: Colors.blue,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12.0),
-                      ),
-                    ),
-                    child: const Text(
-                      'Flip',
-                      style: TextStyle(fontSize: 18.0, color: Colors.black),
-                    ),
+                    text: 'Flip',
                   ),
                   const SizedBox(height: 40.0),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      ElevatedButton(
+                      CustomButton(
                         onPressed: () => _markAsKnown(false),
-                        style: ElevatedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(horizontal: 30.0, vertical: 15.0),
-                          backgroundColor: Colors.red,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12.0),
-                          ),
-                        ),
-                        child: const Text(
-                          'I don\'t know',
-                          style: TextStyle(fontSize: 18.0, color: Colors.black),
-                        ),
+                        text: 'I don\'t know',
+                        color: Colors.red,
+                        hoverColor: Colors.red[700]!,
                       ),
-                      ElevatedButton(
+                      CustomButton(
                         onPressed: () => _markAsKnown(true),
-                        style: ElevatedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(horizontal: 30.0, vertical: 15.0),
-                          backgroundColor: Colors.green,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12.0),
-                          ),
-                        ),
-                        child: const Text(
-                          'I know',
-                          style: TextStyle(fontSize: 18.0, color: Colors.black),
-                        ),
+                        text: 'I know',
+                        color: Colors.green,
+                        hoverColor: Colors.green[700]!
                       ),
                     ],
                   ),

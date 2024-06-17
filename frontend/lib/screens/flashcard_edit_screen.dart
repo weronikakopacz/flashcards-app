@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:frontend/auth/auth_bloc.dart';
+import 'package:frontend/components/custom_button.dart';
 import 'package:frontend/models/flashcard.dart';
 import 'package:frontend/services/flashcard_service.dart';
 import 'package:logger/logger.dart';
@@ -74,9 +75,9 @@ class FlashcardEditScreenState extends State<FlashcardEditScreen> {
               ),
             ),
             const SizedBox(height: 16.0),
-            ElevatedButton(
+            CustomButton(
               onPressed: _saveChanges,
-              child: const Text('Save Changes'),
+              text: 'Save Changes',
             ),
           ],
         ),
