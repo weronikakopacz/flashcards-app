@@ -10,6 +10,8 @@ class SummaryArguments {
   final VoidCallback onFinish;
   final List<Flashcard> flashcards;
   late List<bool?> flashcardStatus;
+  final String setId;
+  final bool repeatUnknown;
 
   SummaryArguments({
     required this.knownCount,
@@ -19,5 +21,7 @@ class SummaryArguments {
     required this.onFinish,
     required this.flashcards,
     required this.flashcardStatus,
+    required this.setId,
+    required this.repeatUnknown,
   });
 }

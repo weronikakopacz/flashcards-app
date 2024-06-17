@@ -4,6 +4,7 @@ import 'package:frontend/auth/auth_bloc.dart';
 import 'package:frontend/components/custom_button.dart';
 import 'package:frontend/models/flashcard.dart';
 import 'package:frontend/models/set.dart';
+import 'package:frontend/models/study_arguments.dart';
 import 'package:frontend/screens/flashcard_edit_screen.dart';
 import 'package:frontend/services/flashcard_service.dart';
 import 'package:frontend/services/auth_service.dart';
@@ -80,7 +81,10 @@ class FlashcardListWidgetState extends State<FlashcardListWidget> {
                       Navigator.pushNamed(
                         context,
                         '/study',
-                        arguments: flashcards,
+                        arguments: StudyArguments(
+                          flashcards: flashcards,
+                          setId: widget.setId,
+                          repeatUnknown: false),
                       );
                     },
                     text: 'Start Studying',

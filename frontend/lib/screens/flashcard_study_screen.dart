@@ -6,8 +6,10 @@ import 'package:frontend/models/summary_arguments.dart';
 
 class FlashcardStudyScreen extends StatefulWidget {
   final List<Flashcard> flashcards;
+  final String setId;
+  final bool repeatUnknown;
 
-  const FlashcardStudyScreen({super.key, required this.flashcards});
+  const FlashcardStudyScreen({super.key, required this.flashcards, required this.setId, required this.repeatUnknown});
 
   @override
   FlashcardStudyScreenState createState() => FlashcardStudyScreenState();
@@ -79,6 +81,8 @@ class FlashcardStudyScreenState extends State<FlashcardStudyScreen> {
         onFinish: _finishStudy,
         flashcards: allFlashcards,
         flashcardStatus: flashcardStatus,
+        setId: widget.setId,
+        repeatUnknown: widget.repeatUnknown,
       ),
     );
   }
@@ -87,7 +91,7 @@ class FlashcardStudyScreenState extends State<FlashcardStudyScreen> {
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
-        builder: (context) => FlashcardStudyScreen(flashcards: allFlashcards),
+        builder: (context) => FlashcardStudyScreen(flashcards: allFlashcards, setId: widget.setId, repeatUnknown: false),
       ),
     );
   }
@@ -103,7 +107,7 @@ class FlashcardStudyScreenState extends State<FlashcardStudyScreen> {
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
-        builder: (context) => FlashcardStudyScreen(flashcards: unknownFlashcards),
+        builder: (context) => FlashcardStudyScreen(flashcards: unknownFlashcards, setId: widget.setId, repeatUnknown: true),
       ),
     );
   }
