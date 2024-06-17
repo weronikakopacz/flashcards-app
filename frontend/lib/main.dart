@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:frontend/screens/create_set_screen.dart';
 import 'package:frontend/screens/edit_set_screen.dart';
+import 'package:frontend/screens/flashcard_study_screen.dart';
 import 'package:frontend/screens/home_screen.dart';
 import 'package:frontend/screens/login_screen.dart';
 import 'package:frontend/screens/registration_screen.dart';
@@ -10,6 +11,7 @@ import 'package:frontend/auth/auth_bloc.dart';
 import 'package:frontend/screens/user_set_screen.dart';
 import 'package:frontend/services/auth_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:frontend/models/flashcard.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -75,6 +77,17 @@ class MyAppState extends State<MyApp> {
               return MaterialPageRoute(
                 builder: (context) => EditSetScreen(setId: setId),
               );
+            } else if (settings.name == '/study') {
+              final flashcards = settings.arguments as List<Flashcard>;
+              if (flashcards.isEmpty) {
+                return MaterialPageRoute(
+                  builder: (context) => const HomeScreen(),
+                );
+              } else {
+                return MaterialPageRoute(
+                  builder: (context) => FlashcardStudyScreen(flashcards: flashcards),
+                );
+              }
             }
             return null;
           },

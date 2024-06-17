@@ -4,7 +4,6 @@ import 'package:frontend/auth/auth_bloc.dart';
 import 'package:frontend/models/flashcard.dart';
 import 'package:frontend/models/set.dart';
 import 'package:frontend/screens/flashcard_edit_screen.dart';
-import 'package:frontend/screens/flashcard_study_screen.dart';
 import 'package:frontend/services/flashcard_service.dart';
 import 'package:frontend/services/auth_service.dart';
 import 'package:logger/logger.dart';
@@ -77,11 +76,10 @@ class FlashcardListWidgetState extends State<FlashcardListWidget> {
                   alignment: Alignment.centerLeft,
                   child: ElevatedButton(
                     onPressed: () {
-                      Navigator.push(
+                      Navigator.pushNamed(
                         context,
-                        MaterialPageRoute(
-                          builder: (context) => FlashcardStudyScreen(flashcards: flashcards),
-                        ),
+                        '/study',
+                        arguments: flashcards,
                       );
                     },
                     child: const Text('Start Studying'),

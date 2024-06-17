@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:frontend/components/header_widget.dart';
 import 'package:frontend/models/flashcard.dart';
@@ -15,6 +13,7 @@ class FlashcardStudyScreen extends StatefulWidget {
 
 class FlashcardStudyScreenState extends State<FlashcardStudyScreen> {
   late List<Flashcard> remainingFlashcards;
+  late List<Flashcard> allFlashcards;
   late List<bool?> flashcardStatus;
   Flashcard? currentFlashcard;
   bool isFront = true;
@@ -23,36 +22,37 @@ class FlashcardStudyScreenState extends State<FlashcardStudyScreen> {
   @override
   void initState() {
     super.initState();
-    remainingFlashcards = List.from(widget.flashcards);
     flashcardStatus = List.filled(widget.flashcards.length, null);
-    _pickRandomFlashcard();
+    _initializeFlashcards();
+  }
+
+  void _initializeFlashcards() {
+    setState(() {
+      allFlashcards = List.from(widget.flashcards);
+      remainingFlashcards = List.from(widget.flashcards);
+      remainingFlashcards.shuffle();
+      currentIndex = 0;
+      _pickRandomFlashcard();
+    });
   }
 
   void _pickRandomFlashcard() {
-    if (remainingFlashcards.isEmpty) {
+    if (currentIndex >= remainingFlashcards.length) {
       _showSummary();
       return;
     }
-
-    final random = Random();
-    final index = random.nextInt(remainingFlashcards.length);
     setState(() {
-      currentFlashcard = remainingFlashcards[index];
+      currentFlashcard = remainingFlashcards[currentIndex];
       isFront = true;
     });
   }
 
   void _markAsKnown(bool isKnown) {
     if (currentFlashcard != null) {
-      flashcardStatus[currentIndex] = isKnown;
+      final originalIndex = widget.flashcards.indexOf(currentFlashcard!);
+      flashcardStatus[originalIndex] = isKnown;
       currentIndex++;
-
-      // Check if all flashcards have been reviewed
-      if (currentIndex >= widget.flashcards.length) {
-        _showSummary();
-      } else {
-        _pickRandomFlashcard();
-      }
+      _pickRandomFlashcard();
     }
   }
 
@@ -101,17 +101,15 @@ class FlashcardStudyScreenState extends State<FlashcardStudyScreen> {
   void _restartLearning({required bool onlyUnknown}) {
     setState(() {
       if (onlyUnknown) {
-        remainingFlashcards = List.generate(widget.flashcards.length, (index) {
-          if (flashcardStatus[index] == false) {
-            return widget.flashcards[index];
-          } else {
-            return null;
-          }
-        }).whereType<Flashcard>().toList();
+        remainingFlashcards = allFlashcards.where((flashcard) {
+          final index = allFlashcards.indexOf(flashcard);
+          return flashcardStatus[index] == false;
+        }).toList();
       } else {
-        remainingFlashcards = List.from(widget.flashcards);
+        remainingFlashcards = List.from(allFlashcards);
       }
-      flashcardStatus = List.filled(widget.flashcards.length, null);
+      remainingFlashcards.shuffle();
+      flashcardStatus = List.filled(remainingFlashcards.length, null);
       currentIndex = 0;
       _pickRandomFlashcard();
     });
@@ -122,13 +120,14 @@ class FlashcardStudyScreenState extends State<FlashcardStudyScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
       child: Row(
         children: List.generate(
-          widget.flashcards.length,
+          remainingFlashcards.length,
           (index) {
             Color color;
             if (index < currentIndex) {
-              if (flashcardStatus[index] == true) {
+              final originalIndex = widget.flashcards.indexOf(remainingFlashcards[index]);
+              if (flashcardStatus[originalIndex] == true) {
                 color = Colors.green;
-              } else if (flashcardStatus[index] == false) {
+              } else if (flashcardStatus[originalIndex] == false) {
                 color = Colors.red;
               } else {
                 color = Colors.grey[300]!;
@@ -167,7 +166,7 @@ class FlashcardStudyScreenState extends State<FlashcardStudyScreen> {
                   _buildProgressIndicator(),
                   const SizedBox(height: 10.0),
                   Text(
-                    'Flashcard ${currentIndex + 1} of ${widget.flashcards.length}',
+                    'Flashcard ${currentIndex + 1} of ${remainingFlashcards.length}',
                     style: const TextStyle(fontSize: 18.0),
                   ),
                   const SizedBox(height: 50.0),
