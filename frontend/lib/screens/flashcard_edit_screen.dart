@@ -50,16 +50,21 @@ class FlashcardEditScreenState extends State<FlashcardEditScreen> {
     }
   }
 
+  void _cancel() {
+    Navigator.pop(context);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Edit Flashcard'),
-      ),
+            title: const Text('Edit Set'),
+            automaticallyImplyLeading: false,
+          ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
             TextField(
               controller: _termController,
@@ -76,8 +81,15 @@ class FlashcardEditScreenState extends State<FlashcardEditScreen> {
             ),
             const SizedBox(height: 16.0),
             CustomButton(
-              onPressed: _saveChanges,
-              text: 'Save Changes',
+              onPressed: () => _saveChanges(),
+              text: 'Update Flashcard',
+              width: 200,
+              ),
+            const SizedBox(height: 16.0),
+            CustomButton(
+              onPressed: _cancel,
+              text:'Cancel',
+              width: 200,
             ),
           ],
         ),
