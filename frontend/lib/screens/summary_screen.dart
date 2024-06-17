@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-
 import '../models/flashcard.dart';
 
 class SummaryScreen extends StatelessWidget {
@@ -34,14 +33,17 @@ class SummaryScreen extends StatelessWidget {
             Text('Unknown Count: $unknownCount'),
             const SizedBox(height: 20),
             ElevatedButton(
-              onPressed: onRepeatUnknown,
-              child: const Text('Repeat Unknown'),
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton(
               onPressed: onRepeatAll,
               child: const Text('Repeat All'),
             ),
+            if (unknownCount > 0)
+              ...[
+                const SizedBox(height: 20),
+                ElevatedButton(
+                  onPressed: onRepeatUnknown,
+                  child: const Text('Repeat Unknown'),
+                ),
+              ],
             const SizedBox(height: 20),
             ElevatedButton(
               onPressed: onFinish,

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/components/header_widget.dart';
 import 'package:frontend/models/flashcard.dart';
-import 'package:frontend/screens/summary_screen.dart';
+import 'package:frontend/models/summary_arguments.dart';
 
 class FlashcardStudyScreen extends StatefulWidget {
   final List<Flashcard> flashcards;
@@ -67,20 +67,29 @@ class FlashcardStudyScreenState extends State<FlashcardStudyScreen> {
     final knownCount = flashcardStatus.where((status) => status == true).length;
     final unknownCount = flashcardStatus.where((status) => status == false).length;
 
-    Navigator.push(
+    Navigator.pushNamed(
+    context,
+    '/summary',
+    arguments: SummaryArguments(
+      knownCount: knownCount,
+      unknownCount: unknownCount,
+      onRepeatUnknown: _repeatUnknown,
+      onRepeatAll: _repeatAll,
+      onFinish: _finishStudy,
+      flashcards: allFlashcards,
+    ),
+  );
+  }
+
+  void _repeatAll() {
+    Navigator.pushReplacement(
       context,
       MaterialPageRoute(
-        builder: (context) => SummaryScreen(
-          flashcards: allFlashcards,
-          knownCount: knownCount,
-          unknownCount: unknownCount,
-          onRepeatUnknown: _repeatUnknown,
-          onRepeatAll: _initializeFlashcards,
-          onFinish: _finishStudy,
-        ),
+        builder: (context) => FlashcardStudyScreen(flashcards: allFlashcards),
       ),
     );
   }
+
 
   void _repeatUnknown() {
     final List<Flashcard> unknownFlashcards = [];
@@ -98,8 +107,11 @@ class FlashcardStudyScreenState extends State<FlashcardStudyScreen> {
     );
   }
 
-  void _finishStudy() {
-    Navigator.pop(context);
+  Future<void> _finishStudy() async {
+    await Navigator.pushNamed(
+      context,
+      '/home',
+    );
   }
 
   Widget _buildProgressIndicator() {
