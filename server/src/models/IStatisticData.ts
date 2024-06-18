@@ -3,7 +3,7 @@ interface StatisticData {
     setId: string;
     correct: number;
     incorrect: number;
-    repeat_unknown?: number;
+    repeatUnknown: number;
 }
 
 export { StatisticData };

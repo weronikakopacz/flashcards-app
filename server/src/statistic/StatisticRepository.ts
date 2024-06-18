@@ -6,17 +6,18 @@ import { SetStats } from "../models/ISetStats";
 
 async function saveStatistic(data: StatisticData, uid: string) {
   try {
-    const { setId, correct, incorrect, repeat_unknown } = data;
+    const { setId, correct, incorrect, repeatUnknown } = data;
+    const repeatUnknownValue = repeatUnknown;
 
-    await updateGeneralStatistics(uid, correct, incorrect);
-    await updateSetStatistics(uid, setId, correct, incorrect, repeat_unknown || 0);
+    await updateGeneralStatistics(uid, correct, incorrect, repeatUnknownValue);
+    await updateSetStatistics(uid, setId, correct, incorrect, repeatUnknownValue);
   } catch (error) {
     console.error('Error saving statistic:', error);
     throw new Error('Failed to save statistic.');
   }
 }
 
-async function updateGeneralStatistics(uid: string, correct: number, incorrect: number) {
+async function updateGeneralStatistics(uid: string, correct: number, incorrect: number, repeatUnknown: number) {
   try {
     const userRef = doc(db, 'userStats', uid);
     const userDoc = await getDoc(userRef);
@@ -35,7 +36,7 @@ async function updateGeneralStatistics(uid: string, correct: number, incorrect: 
 
       generalStatistics.totalSetsCompleted++;
       generalStatistics.averageAccuracy = calculateAverageAccuracy(generalStatistics.totalSetsCompleted, userData.generalStatistics?.averageAccuracy || 0, newAccuracy);
-      generalStatistics.averageRepeatUnknown = calculateAverageRepeatUnknown(generalStatistics.totalSetsCompleted, userData.generalStatistics?.averageRepeatUnknown || 0, 0);
+      generalStatistics.averageRepeatUnknown = calculateAverageRepeatUnknown(generalStatistics.totalSetsCompleted, userData.generalStatistics?.averageRepeatUnknown || 0, repeatUnknown);
 
       await updateDoc(userRef, {
         generalStatistics
@@ -46,7 +47,7 @@ async function updateGeneralStatistics(uid: string, correct: number, incorrect: 
         generalStatistics: {
           totalSetsCompleted: 1,
           averageAccuracy: correct > 0 ? correct / (correct + incorrect) : 0,
-          averageRepeatUnknown: 0
+          averageRepeatUnknown: repeatUnknown
         }
       });
     }
@@ -56,7 +57,7 @@ async function updateGeneralStatistics(uid: string, correct: number, incorrect: 
   }
 }
 
-async function updateSetStatistics(uid: string, setId: string, correct: number, incorrect: number, repeat_unknown: number) {
+async function updateSetStatistics(uid: string, setId: string, correct: number, incorrect: number, repeatUnknown: number) {
   try {
     const setRef = doc(db, 'setStats', setId);
     const setDocRef = await getDoc(setRef);
@@ -79,7 +80,7 @@ async function updateSetStatistics(uid: string, setId: string, correct: number, 
       setStatistics.totalAttempts++;
       setStatistics.totalCorrect += correct;
       setStatistics.totalIncorrect += incorrect;
-      setStatistics.totalRepeatUnknown += repeat_unknown;
+      setStatistics.totalRepeatUnknown += repeatUnknown;
       setStatistics.averageAccuracy = calculateAverageAccuracy(setStatistics.totalAttempts, setData.statistics?.averageAccuracy || 0, newAccuracy);
 
       await updateDoc(setRef, {
@@ -93,7 +94,7 @@ async function updateSetStatistics(uid: string, setId: string, correct: number, 
           totalAttempts: 1,
           totalCorrect: correct,
           totalIncorrect: incorrect,
-          totalRepeatUnknown: repeat_unknown,
+          totalRepeatUnknown: repeatUnknown,
           averageAccuracy: correct > 0 ? correct / (correct + incorrect) : 0
         }
       });
@@ -112,4 +113,21 @@ function calculateAverageRepeatUnknown(totalSetsCompleted: number, currentAverag
   return ((currentAverage * (totalSetsCompleted - 1)) + newRepeatUnknown) / totalSetsCompleted;
 }
 
-export { saveStatistic };
+async function getUserStatistics(uid: string): Promise<UserStats | null> {
+  try {
+    const userRef = doc(db, 'userStats', uid);
+    const userDoc = await getDoc(userRef);
+
+    if (userDoc.exists()) {
+      return userDoc.data() as UserStats;
+    } else {
+      console.log('User document does not exist.');
+      return null;
+    }
+  } catch (error) {
+    console.error('Error fetching user statistics:', error);
+    throw new Error('Failed to fetch user statistics.');
+  }
+}
+
+export { saveStatistic, getUserStatistics };

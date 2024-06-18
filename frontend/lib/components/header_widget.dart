@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:frontend/auth/auth_bloc.dart';
+import 'package:frontend/models/user_stats.dart';
 import 'package:frontend/services/auth_service.dart';
+import 'package:frontend/services/statistic_service.dart';
 
 class HeaderWidget extends StatefulWidget {
   const HeaderWidget({super.key});
@@ -12,6 +14,7 @@ class HeaderWidget extends StatefulWidget {
 
 class HeaderWidgetState extends State<HeaderWidget> {
   String? userEmail;
+  UserStats? userStats;
 
   @override
   void initState() {
@@ -35,7 +38,26 @@ class HeaderWidgetState extends State<HeaderWidget> {
     }
   }
 
-  @override
+  Future<UserStats> fetchUserStats() async {
+    try {
+      final authBloc = BlocProvider.of<AuthBloc>(context);
+      final state = authBloc.state;
+      if (state is AuthLoggedIn) {
+        final accessToken = state.accessToken;
+        final userStats = await StatisticService().fetchUserStatistics(accessToken);
+        if (userStats != null) {
+          return userStats;
+        }
+        throw 'User statistics not available';
+      }
+      throw 'User not authenticated';
+    } catch (error) {
+      throw 'User not authenticated';
+    }
+  }
+
+
+    @override
   Widget build(BuildContext context) {
     final authBloc = BlocProvider.of<AuthBloc>(context);
 
@@ -68,10 +90,14 @@ class HeaderWidgetState extends State<HeaderWidget> {
         const Spacer(),
         PopupMenuButton<String>(
           icon: const Icon(Icons.account_circle, color: Color.fromARGB(255, 22, 22, 22)),
-          onSelected: (value) {
+          onSelected: (value) async {
             if (value == 'logout') {
               authBloc.add(const LogoutEvent());
               Navigator.pushReplacementNamed(context, '/login');
+            } else if (value == 'user_stats') {
+              final userStats = await fetchUserStats();
+              // ignore: use_build_context_synchronously
+              Navigator.pushNamed(context, '/user-stats', arguments: userStats);
             }
           },
           itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
@@ -80,6 +106,10 @@ class HeaderWidgetState extends State<HeaderWidget> {
                 value: 'email',
                 child: Text(userEmail!),
               ),
+            const PopupMenuItem<String>(
+              value: 'user_stats',
+              child: Text('User Statistics'),
+            ),
             const PopupMenuItem<String>(
               value: 'logout',
               child: Text('Logout'),
