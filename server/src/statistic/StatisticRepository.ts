@@ -57,47 +57,36 @@ async function updateGeneralStatistics(uid: string, correct: number, incorrect: 
   }
 }
 
-async function updateSetStatistics(uid: string, setId: string, correct: number, incorrect: number, repeatUnknown: number) {
+async function updateSetStatistics(userId: string, setId: string, correct: number, incorrect: number, repeatUnknown: number) {
   try {
-    const setRef = doc(db, 'setStats', setId);
-    const setDocRef = await getDoc(setRef);
+    const userStatsRef = doc(db, `setStats/${setId}/userStatsForSet/${userId}`);
+    const userStatsDoc = await getDoc(userStatsRef);
 
-    if (setDocRef.exists()) {
-      const setData = setDocRef.data() as { statistics?: SetStats };
+    if (userStatsDoc.exists()) {
+      const userData = userStatsDoc.data() as SetStats;
+      const totalAttempts = userData.totalAttempts + 1;
+      const newCorrect = userData.totalCorrect + correct;
+      const newIncorrect = userData.totalIncorrect + incorrect;
+      const newRepeatUnknown = userData.totalRepeatUnknown + repeatUnknown;
+      const newAverageAccuracy = newCorrect / (newCorrect + newIncorrect);
 
-      let setStatistics: SetStats = setData.statistics || {
-        uid: uid,
-        totalAttempts: 0,
-        totalCorrect: 0,
-        totalIncorrect: 0,
-        totalRepeatUnknown: 0,
-        averageAccuracy: 0
-      };
-
-      const totalAttempts = correct + incorrect;
-      const newAccuracy = totalAttempts > 0 ? correct / totalAttempts : 0;
-
-      setStatistics.totalAttempts++;
-      setStatistics.totalCorrect += correct;
-      setStatistics.totalIncorrect += incorrect;
-      setStatistics.totalRepeatUnknown += repeatUnknown;
-      setStatistics.averageAccuracy = calculateAverageAccuracy(setStatistics.totalAttempts, setData.statistics?.averageAccuracy || 0, newAccuracy);
-
-      await updateDoc(setRef, {
-        statistics: setStatistics
+      await updateDoc(userStatsRef, {
+        totalAttempts: totalAttempts,
+        totalCorrect: newCorrect,
+        totalIncorrect: newIncorrect,
+        totalRepeatUnknown: newRepeatUnknown,
+        averageAccuracy: newAverageAccuracy
       });
     } else {
-      console.log('Set document does not exist, initializing...');
-      await setDoc(setRef, {
-        statistics: {
-          uid: uid,
-          totalAttempts: 1,
-          totalCorrect: correct,
-          totalIncorrect: incorrect,
-          totalRepeatUnknown: repeatUnknown,
-          averageAccuracy: correct > 0 ? correct / (correct + incorrect) : 0
-        }
-      });
+      const initialStatistics = {
+        averageAccuracy: correct / (correct + incorrect),
+        totalAttempts: 1,
+        totalCorrect: correct,
+        totalIncorrect: incorrect,
+        totalRepeatUnknown: repeatUnknown
+      };
+
+      await setDoc(userStatsRef, initialStatistics);
     }
   } catch (error) {
     console.error('Error updating set statistics:', error);
@@ -130,4 +119,22 @@ async function getUserStatistics(uid: string): Promise<UserStats | null> {
   }
 }
 
-export { saveStatistic, getUserStatistics };
+async function getSetStatistics(userId: string, setId: string): Promise<SetStats | null> {
+  try {
+    const userStatsRef = doc(db, `setStats/${setId}/userStatsForSet/${userId}`);
+    const userStatsDoc = await getDoc(userStatsRef);
+
+    if (userStatsDoc.exists()) {
+      const userData = userStatsDoc.data() as SetStats;
+      return userData;
+    } else {
+      console.log('User does not have access to set statistics.');
+      return null;
+    }
+  } catch (error) {
+    console.error('Error fetching set statistics:', error);
+    throw new Error('Failed to fetch set statistics.');
+  }
+}
+
+export { saveStatistic, getUserStatistics, getSetStatistics };

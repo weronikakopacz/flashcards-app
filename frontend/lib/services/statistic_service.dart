@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:frontend/models/set_stats.dart';
 import 'package:frontend/models/statistic_data.dart';
 import 'package:frontend/models/user_stats.dart';
 import 'package:http/http.dart' as http;
@@ -29,7 +30,7 @@ class StatisticService {
   }
 
   Future<UserStats?> fetchUserStatistics(String accessToken) async {
-    final url = Uri.parse('http://localhost:8080/api/statistics/user');
+    final url = Uri.parse('http://localhost:8080/api/statistics/user/stats');
     try {
       final headers = {
         'Content-Type': 'application/json',
@@ -39,6 +40,27 @@ class StatisticService {
 
       if (response.statusCode == 200) {
         return UserStats.fromJson(jsonDecode(response.body));
+      } else {
+        _logger.e('Failed to load user statistics: ${response.statusCode}');
+        return null;
+      }
+    } catch (e) {
+      _logger.e('Error fetching user statistics: $e');
+      return null;
+    }
+  }
+
+  Future<SetStats?> fetchSetStatistics(String setId, String accessToken) async {
+    final url = Uri.parse('http://localhost:8080/api/statistics/$setId');
+    try {
+      final headers = {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $accessToken',
+      };
+      final response = await http.get(url, headers: headers);
+
+      if (response.statusCode == 200) {
+        return SetStats.fromJson(jsonDecode(response.body));
       } else {
         _logger.e('Failed to load user statistics: ${response.statusCode}');
         return null;

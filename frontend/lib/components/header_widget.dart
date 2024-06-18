@@ -38,17 +38,17 @@ class HeaderWidgetState extends State<HeaderWidget> {
     }
   }
 
-  Future<UserStats> fetchUserStats() async {
+  Future<UserStats?> fetchUserStats() async {
     try {
       final authBloc = BlocProvider.of<AuthBloc>(context);
       final state = authBloc.state;
       if (state is AuthLoggedIn) {
         final accessToken = state.accessToken;
-        final userStats = await StatisticService().fetchUserStatistics(accessToken);
-        if (userStats != null) {
-          return userStats;
-        }
-        throw 'User statistics not available';
+        final stats = await StatisticService().fetchUserStatistics(accessToken);
+        setState(() {
+          userStats = stats;
+        });
+        return stats;
       }
       throw 'User not authenticated';
     } catch (error) {
@@ -56,8 +56,7 @@ class HeaderWidgetState extends State<HeaderWidget> {
     }
   }
 
-
-    @override
+  @override
   Widget build(BuildContext context) {
     final authBloc = BlocProvider.of<AuthBloc>(context);
 

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:frontend/models/set_stats.dart';
 import 'package:frontend/models/study_arguments.dart';
 import 'package:frontend/models/summary_arguments.dart';
 import 'package:frontend/models/user_stats.dart';
@@ -11,6 +12,7 @@ import 'package:frontend/screens/login_screen.dart';
 import 'package:frontend/screens/registration_screen.dart';
 import 'package:frontend/screens/set_detail_screen.dart';
 import 'package:frontend/auth/auth_bloc.dart';
+import 'package:frontend/screens/set_statistics_sreen.dart';
 import 'package:frontend/screens/summary_screen.dart';
 import 'package:frontend/screens/user_set_screen.dart';
 import 'package:frontend/screens/user_statistics_screen.dart';
@@ -126,6 +128,17 @@ class MyAppState extends State<MyApp> {
                   builder: (context) => const HomeScreen(),
                 );
               }
+            } else if (settings.name == '/set-statistics') {
+              final arguments = settings.arguments;
+              if (arguments is SetStats) {
+                return MaterialPageRoute(
+                  builder: (context) => SetStatisticsScreen(setStats: arguments),
+                );
+              }
+            } else {
+              return MaterialPageRoute(
+                builder: (context) => const HomeScreen(),
+              );
             }
             return null;
           },

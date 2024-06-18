@@ -5,10 +5,12 @@ import 'package:frontend/components/flashcard_list_widget.dart';
 import 'package:frontend/components/header_widget.dart';
 import 'package:frontend/models/flashcard.dart';
 import 'package:frontend/models/set.dart';
+import 'package:frontend/models/set_stats.dart';
 import 'package:frontend/services/auth_service.dart';
 import 'package:frontend/services/flashcard_service.dart';
 import 'package:frontend/services/set_service.dart';
 import 'package:frontend/auth/auth_bloc.dart';
+import 'package:frontend/services/statistic_service.dart';
 import 'package:logger/logger.dart';
 
 class SetDetailScreen extends StatefulWidget {
@@ -59,6 +61,24 @@ class SetDetailScreenState extends State<SetDetailScreen> {
     });
   }
 
+  Future<SetStats> fetchUserStats() async {
+    try {
+      final authBloc = BlocProvider.of<AuthBloc>(context);
+      final state = authBloc.state;
+      if (state is AuthLoggedIn) {
+        final accessToken = state.accessToken;
+        final setStats = await StatisticService().fetchSetStatistics(widget.setId, accessToken);
+        if (setStats != null) {
+          return setStats;
+        }
+        throw 'User statistics not available';
+      }
+      throw 'User not authenticated';
+    } catch (error) {
+      throw 'User not authenticated';
+    }
+  }
+
   Future<Set> _loadSetDetails() async {
     try {
       final set = await SetService().getSet(widget.setId);
@@ -90,6 +110,20 @@ class SetDetailScreenState extends State<SetDetailScreen> {
       }
     } catch (error) {
       _handleError('Failed to add flashcard: $error');
+    }
+  }
+
+  void _viewSetStatistics(BuildContext context) async {
+    try {
+      final setStats = await fetchUserStats();
+      Navigator.pushNamed(
+        // ignore: use_build_context_synchronously
+        context,
+        '/set-statistics',
+        arguments: setStats,
+      );
+    } catch (error) {
+      _handleError('Failed to view set statistics: $error');
     }
   }
 
@@ -172,7 +206,15 @@ class SetDetailScreenState extends State<SetDetailScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('Title: ${set.title}', style: Theme.of(context).textTheme.titleLarge),
+                    Row(
+                      children: [
+                        Text('Title: ${set.title}', style: Theme.of(context).textTheme.titleLarge),
+                        IconButton(
+                          icon: const Icon(Icons.insert_chart),
+                          onPressed: () => _viewSetStatistics(context),
+                        ),
+                      ],
+                    ),
                     if (_isUserAllowedToEdit(set)) _buildActionButtons(),
                   ],
                 ),
