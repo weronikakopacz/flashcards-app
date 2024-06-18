@@ -51,7 +51,7 @@ statisticRouter.get('/:setId', async (req: Request, res: Response) => {
     if (!userId) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
-    console.log(userId);
+
     const setStats = await getSetStatistics(userId, setId);
 
     if (setStats) {
@@ -81,7 +81,7 @@ statisticRouter.get('/user/stats', async (req: Request, res: Response) => {
     if (!userId) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
-    //console.log(userId);
+
     const userStats = await getUserStatistics(userId);
 
     if (userStats) {
